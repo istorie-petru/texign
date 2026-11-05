@@ -19,7 +19,8 @@ consistent across all document types.
 - Author interface stays small; new options need a reason recorded in DECISIONS.md.
 - New user-visible strings go into both string tables in texign-core.sty.
 - Run `tests/smoke.sh` after every change; it must print only `ok` lines.
-- No git operations, GitHub actions, publishing or installs without István's approval.
+- Local commits in this repo are fine. No remotes, pushes, GitHub actions,
+  publishing, destructive git operations or installs without István's approval.
 - Fonts must come from TeX Live; never depend on system fonts.
 
 ## Known constraints

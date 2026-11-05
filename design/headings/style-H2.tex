@@ -1,0 +1,12 @@
+\def\Style{%
+ \renewcommand*{\chapterformat}{\textsf{\small\mdseries\color{accent}\addfontfeatures{LetterSpace=10}CAPITOLUL \thechapter}\par\vspace{4pt}}%
+ \renewcommand*{\chapterlineswithprefixformat}[3]{##2##3\par\vspace{8pt}{\color{accent}\rule{\linewidth}{0.8pt}}}%
+ \RedeclareSectionCommand[beforeskip=0pt,afterskip=26pt,font=\sffamily\bfseries\fontsize{21}{26}\selectfont]{chapter}%
+ \renewcommand*{\sectionformat}{\textcolor{accent}{\thesection}\hspace{0.8em}}%
+ \renewcommand*{\subsectionformat}{\textcolor{muted}{\thesubsection}\hspace{0.7em}}%
+ \RedeclareSectionCommand[beforeskip=20pt,afterskip=8pt,font=\sffamily\bfseries\large]{section}%
+ \RedeclareSectionCommand[beforeskip=14pt,afterskip=4pt,font=\sffamily\bfseries\normalsize]{subsection}%
+ \KOMAoptions{headsepline=0.4pt}\addtokomafont{headsepline}{\color{rule}}%
+ \clearpairofpagestyles\lehead{\leftmark}\rohead{\rightmark}\cfoot*{\pagemark}\automark[section]{chapter}%
+ \renewcommand*{\chapterpagestyle}{plain.scrheadings}}
+\def\Abstract{\noindent{\itshape\color{muted}Cum a devenit școala primară un proiect de stat și ce limite a avut acest proiect până la Marea Unire.}\par\vspace{16pt}}

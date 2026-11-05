@@ -1,0 +1,51 @@
+\documentclass[10pt]{article}
+\usepackage[paperwidth=170mm,paperheight=196mm,margin=13mm,top=11mm,bottom=10mm]{geometry}
+\usepackage{fontspec}
+\setmainfont{IBMPlexSerif}[Extension=.otf,UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,Scale=0.94]
+\setsansfont{IBMPlexSans}[Extension=.otf,UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,Scale=0.94]
+\setmonofont{IBMPlexMono}[Extension=.otf,UprightFont=*-Regular,Scale=0.94]
+\usepackage[english]{babel}
+\babelprovide[import,main]{romanian}
+\usepackage{xcolor,booktabs,microtype}
+\usepackage[skins,breakable]{tcolorbox}
+\pagestyle{empty}\setlength\parindent{0pt}
+\definecolor{ink}{HTML}{1F2328}\definecolor{muted}{HTML}{6A737D}\definecolor{rule}{HTML}{D0D4D9}\definecolor{paper}{HTML}{FFFFFF}
+\input{\PaletteFile}
+\color{ink}
+\newcommand\Swatch[2]{\begin{minipage}[t]{24mm}\centering{\color{#1}\rule{22mm}{11mm}}\\[1pt]{\sffamily\scriptsize\textbf{#2}\\\color{muted}\#\csname hex#1\endcsname}\end{minipage}}
+% one box style for all semantic blocks: left bar + faint tint
+\newtcolorbox{block}[3][]{enhanced,breakable,frame hidden,boxrule=0pt,sharp corners,
+  colback=#2!6!paper,borderline west={2.2pt}{0pt}{#2},left=9pt,right=8pt,top=5pt,bottom=5pt,
+  before skip=6pt,after skip=6pt,fontupper=\small,
+  title={\sffamily\bfseries\small\color{#2!85!ink}#3},attach title to upper={\enspace},coltitle=ink,#1}
+\begin{document}
+{\sffamily\footnotesize\color{muted}\addfontfeatures{LetterSpace=8}PALETA \PaletteLetter\ · \MakeUppercase{\PaletteName}}\par\smallskip
+{\small\color{muted}\PaletteNote}\par\medskip
+\Swatch{ink}{Text}\Swatch{accent}{Accent · Definiție}\Swatch{cex}{Exemplu}\Swatch{cnote}{Notă}\Swatch{cwarn}{Atenție}\Swatch{csrc}{Sursă}
+\par\vspace{12pt}
+{\sffamily\bfseries\fontsize{19}{23}\selectfont Reforma învățământului în România\par}
+\vspace{2pt}{\sffamily\small\color{accent}\textbf{Capitolul 3}\quad\color{muted}Școală, stat și națiune (1864–1918)}\par
+\vspace{2pt}{\color{accent}\rule{\linewidth}{0.6pt}}\par\vspace{8pt}
+{\sffamily\bfseries\large\color{accent}3.1\quad\color{ink}Legea instrucțiunii publice}\par\vspace{4pt}
+Legea din 1864 a introdus învățământul primar obligatoriu și gratuit, \textcolor{accent}{vezi secțiunea 2.4} și \textcolor{accent}{[Murgescu 2010, p.~112]}. Aplicarea ei a depins însă de resursele fiecărei comune.
+
+\begin{block}{cdef}{Definiție.}Sursa primară este un document produs în perioada studiată, de un participant sau martor al evenimentelor.\end{block}
+\begin{block}{cex}{Exemplu.}Raportul unui revizor școlar din 1872 privind școlile rurale din județul Vâlcea.\end{block}
+\begin{block}{cnote}{Notă.}Statisticile oficiale ale vremii supraestimează frecvent numărul elevilor înscriși.\end{block}
+\begin{block}{cwarn}{Atenție.}Nu confundați data adoptării legii cu data intrării ei în vigoare.\end{block}
+\begin{block}{csrc}{Sursă · Legea instrucțiunii, 1864, art.~31.}\itshape „Instrucțiunea primară este obligatorie și gratuită.”\end{block}
+
+\vspace{4pt}
+\begin{minipage}[t]{0.5\linewidth}\small
+{\sffamily\footnotesize\color{accent}\textbf{Tabelul 3.1}\enspace\color{muted}Școli primare rurale}\par\vspace{2pt}
+
+\begin{tabular}{@{}lrr@{}}\toprule
+\sffamily An & \sffamily Școli & \sffamily Elevi\\\midrule
+1864 & 2\,036 & 61\,000\\ 1890 & 2\,654 & 124\,000\\ 1914 & 4\,730 & 553\,000\\\bottomrule
+\end{tabular}\end{minipage}\hfill
+\begin{minipage}[t]{0.45\linewidth}\small
+{\sffamily\footnotesize\color{muted}Exercițiu}\par\vspace{2pt}
+{\sffamily\bfseries\color{accent}1.}\enspace Explicați două cauze ale diferenței dintre 1890 și 1914.\par\vspace{3pt}
+{\color{rule}\rule{\linewidth}{0.4pt}}\par\vspace{9pt}{\color{rule}\rule{\linewidth}{0.4pt}}\par\vspace{9pt}{\color{rule}\rule{\linewidth}{0.4pt}}
+\end{minipage}
+\end{document}

@@ -1,0 +1,22 @@
+\usepackage[top=24mm,bottom=28mm,inner=22mm,textwidth=118mm,marginparwidth=42mm,marginparsep=8mm,headsep=10mm]{geometry}
+\usepackage{marginnote}
+\renewcommand*{\raggedleftmarginnote}{}\renewcommand*{\raggedrightmarginnote}{\raggedright}
+% numbered sidenote: accent number in text, same number + note in margin
+\newcounter{sidenote}
+\newcommand\sidenote[1]{\refstepcounter{sidenote}\textsuperscript{\sffamily\color{accent}\thesidenote}%
+  \marginnote{\sffamily\footnotesize\color{muted}\raggedright\makebox[0pt][r]{\color{accent}\thesidenote\hspace{3pt}}#1}}
+\newcommand\marginremark[1]{\marginnote{\sffamily\footnotesize\color{muted}\raggedright #1}}
+\newcommand\marginfigure[1]{\marginnote{\raggedright{\color{rule!60}\rule{\marginparwidth}{26mm}}\par\vspace{3pt}{\sffamily\footnotesize\color{accent}\textbf{Fig. 1.1}}\enspace{\sffamily\footnotesize\color{muted}#1}}}
+\def\Style{%
+ \renewcommand*{\chapterformat}{\textsf{\small\mdseries\color{accent}\addfontfeatures{LetterSpace=10}CAPITOLUL \thechapter}\par\vspace{4pt}}%
+ \renewcommand*{\chapterlineswithprefixformat}[3]{##2##3\par\vspace{8pt}{\color{accent}\rule{\dimexpr\textwidth+\marginparsep+\marginparwidth}{0.6pt}}}%
+ \RedeclareSectionCommand[beforeskip=0pt,afterskip=26pt,font=\sffamily\bfseries\fontsize{21}{26}\selectfont]{chapter}%
+ \renewcommand*{\sectionformat}{\textcolor{accent}{\thesection}\hspace{0.8em}}%
+ \renewcommand*{\subsectionformat}{\textcolor{muted}{\thesubsection}\hspace{0.7em}}%
+ \RedeclareSectionCommand[beforeskip=20pt,afterskip=8pt,font=\sffamily\bfseries\large]{section}%
+ \RedeclareSectionCommand[beforeskip=14pt,afterskip=4pt,font=\sffamily\bfseries\normalsize]{subsection}%
+ \KOMAoptions{headwidth=textwithmarginpar,footwidth=textwithmarginpar}%
+ \clearpairofpagestyles\ihead{\leftmark}\ohead{\textcolor{accent}{\pagemark}}\automark[section]{chapter}%
+ \renewcommand*{\chapterpagestyle}{scrheadings}}
+\def\Abstract{\noindent{\sffamily\small\color{muted}Cum a devenit școala primară un proiect de stat și ce limite a avut acest proiect până la Marea Unire.}\par\vspace{18pt}}
+\let\SN\sidenote\let\MR\marginremark\let\MF\marginfigure

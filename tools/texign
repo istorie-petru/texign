@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# texign — the one command authors need.
+#   texign build FILE.tex     compile (LuaLaTeX, biber, as many runs as needed)
+#   texign watch FILE.tex     rebuild on every save
+#   texign new TYPE NAME      start a document from a template (article, ...)
+#   texign clean FILE.tex     remove build files (keeps the PDF)
+#   texign doctor             check the toolchain and fonts
+#   texign install            link the classes into ~/texmf (user-level, no root)
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+TEXDIR="$ROOT/tex/latex/texign"
+export TEXINPUTS="$TEXDIR//:${TEXINPUTS:-}"
+
+die() { printf 'texign: %s\n' "$*" >&2; exit 1; }
+need_file() { [[ -f "${1:-}" ]] || die "no such file: ${1:-<missing>}"; }
+
+latexmk_run() { latexmk -r "$ROOT/.latexmkrc" "$@"; }
+
+cmd="${1:-help}"; shift || true
+case "$cmd" in
+  build)  need_file "${1:-}"; cd "$(dirname "$1")"; latexmk_run "$(basename "$1")" ;;
+  watch)  need_file "${1:-}"; cd "$(dirname "$1")"; latexmk_run -pvc -view=none "$(basename "$1")" ;;
+  clean)  need_file "${1:-}"; cd "$(dirname "$1")"; latexmk_run -c "$(basename "$1")" ;;
+  new)
+    type="${1:-}"; name="${2:-}"
+    [[ -n "$type" && -n "$name" ]] || die "usage: texign new TYPE NAME"
+    tpl="$ROOT/templates/$type.tex"
+    [[ -f "$tpl" ]] || die "no template '$type' (have: $(cd "$ROOT/templates" && ls *.tex | sed 's/\.tex$//' | tr '\n' ' '))"
+    [[ -e "$name.tex" ]] && die "$name.tex already exists"
+    cp "$tpl" "$name.tex" && echo "created $name.tex" ;;
+  doctor)
+    ok=1
+    for t in lualatex latexmk biber; do
+      if command -v "$t" >/dev/null; then echo "ok    $t"; else echo "MISS  $t"; ok=0; fi
+    done
+    for f in IBMPlexSerif-Regular.otf IBMPlexSans-Regular.otf IBMPlexMono-Regular.otf \
+             IBMPlexMath-Regular.otf IBMPlexSansCondensed-Regular.otf; do
+      if kpsewhich "$f" >/dev/null; then echo "ok    $f"; else echo "MISS  $f (TeX Live: plex, plex-otf)"; ok=0; fi
+    done
+    "$ROOT/tests/smoke.sh" >/dev/null 2>&1 && echo "ok    test build" || { echo "FAIL  test build (run tests/smoke.sh)"; ok=0; }
+    ((ok)) && echo "Texign is ready." || exit 1 ;;
+  install)
+    dest="$(kpsewhich -var-value TEXMFHOME)/tex/latex/texign"
+    [[ -e "$dest" && ! -L "$dest" ]] && die "$dest exists and is not a link; not touching it"
+    mkdir -p "$(dirname "$dest")" && ln -sfn "$TEXDIR" "$dest"
+    mkdir -p "$HOME/.local/bin" && ln -sfn "$ROOT/tools/texign" "$HOME/.local/bin/texign"
+    echo "linked $dest -> $TEXDIR"; echo "linked ~/.local/bin/texign" ;;
+  help|-h|--help) sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//' ;;
+  *) die "unknown command '$cmd' (try: texign help)" ;;
+esac

@@ -1,0 +1,82 @@
+% texign-core.sty — the Texign identity shared by every document type:
+% options, fonts, colours, languages and localised strings.
+% Agreed values are recorded in DECISIONS.md; change them there first.
+\NeedsTeXFormat{LaTeX2e}[2023-11-01]
+\ProvidesExplPackage{texign-core}{2026/11/05}{0.1.0}{Texign identity core}
+
+\sys_if_engine_luatex:F
+  {
+    \msg_new:nnn { texign } { engine }
+      { Texign~needs~LuaLaTeX.~Compile~with~lualatex~(or~the~texign~command). }
+    \msg_critical:nn { texign } { engine }
+  }
+
+\RequirePackage{texign-options}
+
+% ---- colours (DECISIONS.md, palette B2) ------------------------------------
+\RequirePackage{xcolor}
+\definecolor{ink}    {HTML}{1F2328}
+\definecolor{muted}  {HTML}{6A737D}
+\definecolor{rule}   {HTML}{D0D4D9}
+\definecolor{paper}  {HTML}{FFFFFF}
+\definecolor{accent} {HTML}{963A45}
+\definecolor{example}{HTML}{4F7149}
+\definecolor{remark} {HTML}{647080}
+\definecolor{warning}{HTML}{B0781F}
+\definecolor{source} {HTML}{74624F}
+
+% ---- fonts: IBM Plex from TeX Live, loaded by file name ----------------------
+\RequirePackage{fontspec}
+\RequirePackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+\cs_new:Npn \__texign_plex:nn #1#2
+  % #1 family file prefix, #2 extra features
+  {
+    { #1 } [ Extension = .otf , UprightFont = *-Regular , ItalicFont = *-Italic ,
+      BoldFont = *-SemiBold , BoldItalicFont = *-SemiBoldItalic ,
+      Scale = 0.94 , #2 ]
+  }
+\exp_last_unbraced:Ne \setmainfont { \__texign_plex:nn { IBMPlexSerif } { } }
+\exp_last_unbraced:Ne \setsansfont { \__texign_plex:nn { IBMPlexSans } { } }
+\setmonofont { IBMPlexMono }
+  [ Extension = .otf , UprightFont = *-Regular , ItalicFont = *-Italic ,
+    BoldFont = *-SemiBold , BoldItalicFont = *-SemiBoldItalic , Scale = 0.94 ]
+\setmathfont { IBMPlexMath-Regular.otf } [ Scale = 0.94 ]
+\newfontfamily \condensedfont { IBMPlexSansCondensed }
+  [ Extension = .otf , UprightFont = *-Regular , ItalicFont = *-Italic ,
+    BoldFont = *-SemiBold , BoldItalicFont = *-SemiBoldItalic , Scale = 0.94 ]
+\NewDocumentCommand \condensed { } { \condensedfont }
+% Plex has no small caps: acronyms are capitals with light tracking.
+\NewDocumentCommand \acronym { m }
+  { { \addfontfeatures { LetterSpace = 5 } \text_uppercase:n {#1} } }
+
+% ---- languages ---------------------------------------------------------------
+% babel's ini locales (the Romanian .ldf is not part of every TeX Live).
+\RequirePackage{babel}
+\babelprovide[import]{romanian}
+\babelprovide[import]{english}
+\AtBeginDocument
+  { \str_if_eq:VnTF \g_texign_lang_tl { en } { \selectlanguage{english} } { \selectlanguage{romanian} } }
+\RequirePackage{csquotes}
+
+% localised strings used by Texign components: \texignstring{key}
+\prop_new:N \g__texign_strings_ro_prop
+\prop_new:N \g__texign_strings_en_prop
+\prop_gset_from_keyval:Nn \g__texign_strings_ro_prop
+  {
+    definition = Definiție , concept = Concept , example = Exemplu ,
+    remark = Notă , warning = Atenție , summary = Rezumat ,
+    instructions = Instrucțiuni , source = Sursă , notes = Note ,
+    figure = Figura , table = Tabelul , chapter = Capitolul ,
+  }
+\prop_gset_from_keyval:Nn \g__texign_strings_en_prop
+  {
+    definition = Definition , concept = Concept , example = Example ,
+    remark = Note , warning = Warning , summary = Summary ,
+    instructions = Instructions , source = Source , notes = Notes ,
+    figure = Figure , table = Table , chapter = Chapter ,
+  }
+\cs_new:Npn \texign_string:n #1
+  { \prop_item:cn { g__texign_strings_ \g_texign_lang_tl _prop } {#1} }
+\NewExpandableDocumentCommand \texignstring { m } { \texign_string:n {#1} }
+
+\RequirePackage{microtype}

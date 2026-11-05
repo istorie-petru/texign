@@ -1,0 +1,11 @@
+\def\Style{%
+ \renewcommand*{\chapterformat}{{\color{accent}\fontsize{40}{40}\selectfont\mdseries\fontseries{l}\selectfont\thechapter}\par\vspace{6pt}}%
+ \RedeclareSectionCommand[beforeskip=0pt,afterskip=30pt,font=\sffamily\bfseries\fontsize{22}{27}\selectfont]{chapter}%
+ \renewcommand*{\sectionformat}{\makebox[0pt][r]{\color{accent}\thesection\hspace{10pt}}}%
+ \renewcommand*{\subsectionformat}{\makebox[0pt][r]{\color{muted}\mdseries\thesubsection\hspace{10pt}}}%
+ \RedeclareSectionCommand[beforeskip=20pt,afterskip=6pt,font=\sffamily\bfseries\large]{section}%
+ \RedeclareSectionCommand[beforeskip=14pt,afterskip=4pt,font=\sffamily\bfseries\normalsize]{subsection}%
+ \clearpairofpagestyles\ohead{\pagemark}\ihead{\leftmark}\automark[section]{chapter}%
+ \renewcommand*\chaptermarkformat{}\renewcommand*\sectionmarkformat{}%
+ \renewcommand*{\chapterpagestyle}{plain.scrheadings}\cfoot[\pagemark]{}}
+\def\Abstract{\noindent{\sffamily\small\color{muted}Cum a devenit școala primară un proiect de stat și ce limite a avut acest proiect până la Marea Unire.}\par\vspace{18pt}}

@@ -1,0 +1,20 @@
+% texign-options.sty — the shared option set. Kept free of fonts and other
+% packages so that classes can read their options before \LoadClass.
+\NeedsTeXFormat{LaTeX2e}[2023-11-01]
+\ProvidesExplPackage{texign-options}{2026/11/05}{0.1.0}{Texign options}
+
+% ---- options --------------------------------------------------------------
+% Classes pass their options here; documents may also use \texignsetup.
+\tl_new:N \g_texign_lang_tl
+\tl_new:N \g_texign_notes_tl
+\tl_gset:Nn \g_texign_lang_tl { ro }
+\tl_gset:Nn \g_texign_notes_tl { margin }
+\keys_define:nn { texign }
+  {
+    lang  .choices:nn = { ro , en } { \tl_gset_eq:NN \g_texign_lang_tl \l_keys_choice_tl } ,
+    notes .choices:nn = { margin , foot , end } { \tl_gset_eq:NN \g_texign_notes_tl \l_keys_choice_tl } ,
+  }
+\NewDocumentCommand \texignsetup { m } { \keys_set:nn { texign } {#1} }
+\prg_new_conditional:Npnn \texign_if_margin: { p , T , F , TF }
+  { \str_if_eq:VnTF \g_texign_notes_tl { margin } { \prg_return_true: } { \prg_return_false: } }
+

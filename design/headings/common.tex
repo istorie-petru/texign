@@ -1,0 +1,37 @@
+\documentclass[paper=a4,fontsize=10.5pt,twoside,open=any,parskip=false,headings=standardclasses]{scrbook}
+\usepackage{fontspec}
+\setmainfont{IBMPlexSerif}[Extension=.otf,UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,Scale=0.94]
+\setsansfont{IBMPlexSans}[Extension=.otf,UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,FontFace={l}{n}{*-Light},Scale=0.94]
+\usepackage[english]{babel}\babelprovide[import,main]{romanian}
+\usepackage{xcolor,microtype}
+\definecolor{ink}{HTML}{1F2328}\definecolor{muted}{HTML}{6A737D}\definecolor{rule}{HTML}{D0D4D9}\definecolor{accent}{HTML}{963A45}
+\usepackage[headsepline=false]{scrlayer-scrpage}
+\setkomafont{disposition}{\sffamily\bfseries\color{ink}}
+\setkomafont{pageheadfoot}{\sffamily\footnotesize\color{muted}}
+\setkomafont{pagenumber}{\sffamily\footnotesize\color{muted}}
+\addtokomafont{footnote}{\small}
+\deffootnote{1.2em}{0pt}{\textsf{\color{accent}\thefootnotemark}\enspace}
+\newcommand\ParaText{Legea din 1864 a introdus învățământul primar obligatoriu și gratuit, dar aplicarea ei a depins de resursele fiecărei comune. Rapoartele revizorilor școlari arată o realitate inegală: în unele sate școala funcționa într-o casă închiriată, în altele lipsea cu totul. Statul își asumase o misiune pe care nu o putea încă finanța.}
+\newcommand\Para{\ParaText\par}
+\newcommand\ParaB{Generația care a urmat a transformat școala într-un instrument al construcției naționale. Programele, manualele și formarea învățătorilor au devenit subiecte de dezbatere publică, iar Spiru Haret a legat explicit educația de dezvoltarea satului românesc.\par}
+\providecommand\SN[1]{\footnote{#1}}\providecommand\MR[1]{}\providecommand\MF[1]{}
+\begin{document}
+\color{ink}
+\Style
+\author{István}\title{Școală și națiune}
+\chapter{Școală, stat și națiune (1864–1918)}
+\Abstract
+\Para\ParaB
+\section{Legea instrucțiunii publice}
+\ParaText\SN{Legea instrucțiunii din 25 noiembrie 1864, art.~31. Vezi și Murgescu 2010, p.~112.}\par\ParaB
+\subsection{Învățământul primar}
+\MR{Comparați cu situația din Transilvania, discutată în capitolul~4.}\Para\ParaB\MF{Școală rurală din județul Vâlcea, cca.~1900.}\ParaB\Para
+\section{Reformele lui Spiru Haret}
+\ParaText\SN{Spiru Haret (1851–1912), ministru al instrucțiunii în trei rânduri.}\par\ParaB\Para
+\subsection{Învățătorul ca agent cultural}
+\Para\ParaB\Para\ParaB
+\subsection{Bibliotecile populare}
+\Para\ParaB\Para\ParaB\Para
+\section{Bilanț la 1918}
+\ParaB\Para\ParaB\Para
+\end{document}

@@ -1,0 +1,112 @@
+% texign-layout.sty — page layout, headings and page furniture (H4) for the
+% KOMA-Script based classes (texign-article, texign-book).
+%
+% notes=margin : text 118 mm + 8 mm gap + 42 mm margin column (A4)
+% notes=foot|end : one wider text block, 30 mm side margins, no column
+% \texignfullwidth is the width of text + margin column (or just the text).
+\NeedsTeXFormat{LaTeX2e}[2023-11-01]
+\ProvidesExplPackage{texign-layout}{2026/11/05}{0.1.0}{Texign layout and headings}
+\RequirePackage{texign-core}
+\RequirePackage{geometry}
+\RequirePackage{scrlayer-scrpage}
+
+\dim_new:N \texignfullwidth
+\texign_if_margin:TF
+  {
+    \geometry
+      {
+        a4paper , top = 24mm , bottom = 28mm , inner = 22mm , textwidth = 118mm ,
+        marginparwidth = 42mm , marginparsep = 8mm , headsep = 10mm ,
+      }
+    \KOMAoptions { headwidth = textwithmarginpar , footwidth = textwithmarginpar }
+  }
+  {
+    \geometry
+      {
+        a4paper , top = 24mm , bottom = 28mm , hmargin = 30mm ,
+        marginparwidth = 0pt , marginparsep = 0pt , headsep = 10mm ,
+      }
+    \KOMAoptions { headwidth = text , footwidth = text }
+  }
+\dim_gset:Nn \texignfullwidth { \textwidth + \marginparsep + \marginparwidth }
+
+\setlength \parindent { 1.2em }
+\setlength \parskip { 0pt }
+\AtBeginDocument { \color{ink} }
+
+% ---- headings (H4): sans semibold, numbers inline before the title ---------
+\setkomafont { disposition } { \sffamily \bfseries \color{ink} }
+\setkomafont { descriptionlabel } { \sffamily \bfseries }
+\renewcommand* \sectionformat { \textcolor{accent}{\thesection} \hspace{0.8em} }
+\renewcommand* \subsectionformat { \textcolor{muted}{\thesubsection} \hspace{0.7em} }
+\renewcommand* \subsubsectionformat { \textcolor{muted}{\thesubsubsection} \hspace{0.6em} }
+% negative beforeskip: no first-line indent after any heading
+\RedeclareSectionCommand
+  [ beforeskip = -20pt plus -4pt minus -2pt , afterskip = 8pt , font = \large ] { section }
+\RedeclareSectionCommand
+  [ beforeskip = -14pt plus -3pt minus -2pt , afterskip = 4pt , font = \normalsize ] { subsection }
+\RedeclareSectionCommand
+  [ beforeskip = -10pt plus -2pt minus -1pt , afterskip = 2pt , font = \normalsize \mdseries ] { subsubsection }
+\cs_if_exist:NT \chapter
+  {
+    \renewcommand* \chapterformat
+      {
+        \textsf { \small \mdseries \color{accent} \addfontfeatures { LetterSpace = 10 }
+          \text_uppercase:n { \texign_string:n { chapter } } \nobreakspace \thechapter }
+        \par \vspace{4pt}
+      }
+    \renewcommand* \chapterlineswithprefixformat [3]
+      { #2 #3 \par \vspace{8pt} { \color{accent} \rule { \texignfullwidth } { 0.6pt } } \par \texignmarginbarrier }
+    \renewcommand* \chapterlinesformat [3]
+      { #3 \par \vspace{8pt} { \color{accent} \rule { \texignfullwidth } { 0.6pt } } \par \texignmarginbarrier }
+    \RedeclareSectionCommand
+      [ beforeskip = -1sp , afterskip = 26pt , font = \fontsize{21}{26} \selectfont ] { chapter }
+    \KOMAoptions { chapterprefix = true }
+  }
+
+% ---- page furniture: header across text + margin, number in accent -----------
+\setkomafont { pageheadfoot } { \sffamily \footnotesize \color{muted} }
+\setkomafont { pagenumber } { \sffamily \footnotesize \color{accent} }
+\clearpairofpagestyles
+\ihead* { \headmark }
+\ohead* { \pagemark }
+\cs_if_exist:NTF \chapter
+  { \automark [ section ] { chapter } \renewcommand* \chapterpagestyle { plain.scrheadings } }
+  { \automark [ subsection ] { section } }
+\renewcommand* \sectionmarkformat { }
+\cs_if_exist:NT \chapter { \renewcommand* \chaptermarkformat { } }
+\pagestyle { scrheadings }
+
+% ---- footnotes (notes=foot) ------------------------------------------------------
+\setkomafont { footnote } { \sffamily \footnotesize \color{muted} }
+\deffootnote { 1.2em } { 0pt } { \textsf { \color{accent} \thefootnotemark } \enspace }
+\deffootnotemark { \textsuperscript { \sffamily \color{accent} \thefootnotemark } }
+
+% ---- title block --------------------------------------------------------------
+% \subject{...} (label), \title, \subtitle, \author, \date; \begin{abstract}
+\cs_new_protected:Npn \__texign_titleblock:
+  {
+    \group_begin:
+    \noindent
+    \tl_if_empty:NF \@subject
+      {
+        { \sffamily \small \color{accent} \addfontfeatures { LetterSpace = 10 }
+          \text_uppercase:n { \@subject } } \par \vspace{4pt}
+      }
+    \noindent { \sffamily \bfseries \fontsize{21}{26} \selectfont \raggedright \@title \par }
+    \tl_if_empty:NF \@subtitle
+      { \vspace{4pt} \noindent { \sffamily \large \color{muted} \raggedright \@subtitle \par } }
+    \vspace{10pt}
+    \noindent { \sffamily \small \color{ink} \@author \tl_if_empty:NF \@date { \quad \color{muted} \@date } \par }
+    \vspace{8pt}
+    \noindent { \color{accent} \rule { \texignfullwidth } { 0.6pt } } \par
+    \texignmarginbarrier
+    \vspace{18pt}
+    \group_end:
+    \cs_gset_eq:NN \@subject \c_empty_tl
+    \@afterindentfalse \@afterheading
+  }
+\RenewDocumentCommand \maketitle { } { \__texign_titleblock: \thispagestyle { plain.scrheadings } }
+\RenewDocumentEnvironment { abstract } { }
+  { \noindent \begin{minipage}{\textwidth} \sffamily \small \color{muted} \ignorespaces }
+  { \end{minipage} \par \vspace{16pt} \@afterindentfalse \@afterheading }

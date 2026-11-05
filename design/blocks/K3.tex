@@ -1,0 +1,8 @@
+\def\StyleName{K3 · Etichetă în margine}\def\StyleNote{Eticheta stă în coloana de margine, conținutul în text, cu fundal ușor și fără chenar. Profită de layoutul H4; fără margine, eticheta revine deasupra.}
+\newcommand\mlabel[2]{\makebox[0pt][l]{\hspace{\dimexpr\textwidth+\marginparsep}\parbox[t]{\marginparwidth}{\raggedright\sffamily\footnotesize#2}}}
+\newenvironment{txbox}[3]{\begin{tcolorbox}[enhanced,breakable,frame hidden,boxrule=0pt,sharp corners,colback=#1!6!paper,left=9pt,right=8pt,top=6pt,bottom=6pt,before skip=7pt,after skip=7pt,fontupper=\small,
+ overlay unbroken and first={\node[anchor=north west,inner sep=0pt,text width=\marginparwidth,align=left,font=\sffamily\footnotesize] at ([xshift=\marginparsep,yshift=-6.5pt]frame.north east) {{\color{#1}\bfseries\addfontfeatures{LetterSpace=6}\MakeUppercase{#2}}\ifx&#3&\else\\{\color{muted}#3}\fi};},
+ borderline west={1.2pt}{0pt}{#1}]}{\end{tcolorbox}}
+\newenvironment{txsource}[1]{\begin{tcolorbox}[enhanced,breakable,frame hidden,boxrule=0pt,sharp corners,colback=csrc!7!paper,borderline west={1.2pt}{0pt}{csrc},left=9pt,right=8pt,top=6pt,bottom=6pt,before skip=7pt,after skip=7pt,fontupper=\small\itshape,
+ overlay unbroken and first={\node[anchor=north west,inner sep=0pt,text width=\marginparwidth,align=left,font=\sffamily\footnotesize] at ([xshift=\marginparsep,yshift=-6.5pt]frame.north east) {{\color{csrc}\bfseries\addfontfeatures{LetterSpace=6}SURSĂ}\\{\color{muted}#1}};}]}{\end{tcolorbox}}
+\newenvironment{txquote}[1]{\def\qsrc{#1}\begin{quote}\small}{\par\smallskip\hfill{\sffamily\footnotesize\color{muted}— \qsrc}\end{quote}}

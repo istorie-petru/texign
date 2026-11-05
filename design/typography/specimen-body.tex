@@ -1,0 +1,87 @@
+% Shared specimen text. Identical for every candidate; only fonts change.
+\documentclass[11pt]{article}
+\usepackage[paperwidth=170mm,paperheight=250mm,margin=14mm,top=12mm,bottom=12mm]{geometry}
+\usepackage{fontspec}
+\SetFonts
+\usepackage[english]{babel}
+\babelprovide[import]{romanian}
+\usepackage{xcolor}
+\definecolor{ink}{HTML}{1F2328}
+\definecolor{muted}{HTML}{6A737D}
+\definecolor{accent}{HTML}{2F4B7C}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage[hang]{footmisc}
+\pagestyle{empty}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0pt}
+\color{ink}
+\newcommand\Label[1]{{\SansFont\footnotesize\color{muted}\addfontfeatures{LetterSpace=8}\MakeUppercase{#1}}}
+\newcommand\Hone[1]{{\raggedright\hyphenpenalty=10000\SansFont\HoneFeatures\fontsize{21}{25}\selectfont #1\par}}
+\newcommand\Htwo[1]{\vspace{9pt}{\raggedright\hyphenpenalty=10000\SansFont\HtwoFeatures\fontsize{13}{16}\selectfont #1\par}\vspace{3pt}}
+\begin{document}
+\selectlanguage{romanian}
+\noindent\Label{Opțiunea \OptionLetter\ \textperiodcentered\ \OptionName}\par
+\vspace{2pt}
+\noindent{\footnotesize\color{muted}\OptionFonts}\par
+\vspace{10pt}
+
+\noindent\Hone{Despre lectura atentă: istorie, metodă și practică}
+\vspace{4pt}
+\noindent{\large\itshape Note pentru un seminar de științe umaniste}\par
+\vspace{8pt}
+
+\Htwo{1.\quad Întrebarea de început}
+\noindent Științele umaniste încep, de cele mai multe ori, cu o întrebare aparent simplă: ce înseamnă să înțelegi un text? Răspunsul depinde de context — de epocă, de limbă și de tradiția interpretativă în care se înscrie cititorul.\footnote{Pentru o discuție detaliată, vezi capitolul~3, pp.~45–72.} Așa cum observa un comentator, „lectura atentă nu este un lux, ci o disciplină”.
+
+Studentul care își asumă această disciplină învață treptat să distingă între \emph{ceea ce spune} textul și \emph{ceea ce face} textul. Diferența e subtilă, dar esențială: o țară, o școală sau o generație își construiește înțelegerea de sine tocmai prin \textbf{asemenea distincții}, adesea fără să le numească explicit.
+
+\Htwo{2.\quad Cifre, semne și majuscule}
+\noindent Între 1848, 1918 și 2026 s-au scris 3.479 de pagini; costul total a fost de 1.250,75 lei (+12,5\,\%). Ghilimele „românești”, «franceze» și “englezești”; liniuța de interval 1–9 și linia de pauză — aici. Semne: § ¶ † ‡ \& @ \# ( ) [ ] / … ? ! ; :
+
+\smallskip
+\noindent{\addfontfeatures{Numbers=OldStyle}Cifre minuscule: 0123456789 — anul 1859}\quad
+{\addfontfeatures{Numbers={Lining,Monospaced}}Tabelare: 0123456789}
+
+\smallskip
+\noindent ĂSTA, ÎNVĂȚĂMÂNT, ȘTIINȚĂ, ȚARĂ, ÎNȚELEPCIUNE\quad
+\textsc{Prescurtări în capitale mici: unesco, ue, onu}
+
+\smallskip
+\noindent\textit{Italic: își, înțelegere, școală, țărm, fără să știe.}\quad
+\textbf{Bold: Ștefan, Țepeș, Ănuța.}\quad
+\textbf{\textit{Ambele: ș ț ă â î}}
+
+\par\medskip
+\noindent{\fontsize{20}{24}\selectfont Șș Țț}\enspace{\SansFont\fontsize{20}{24}\selectfont Șș Țț \textbf{Șș Țț}}\quad{\footnotesize\color{muted}virgulă dedesubt (corect)}\qquad{\fontsize{20}{24}\selectfont\color{muted}Şş Ţţ}\enspace{\footnotesize\color{muted}sedilă (greșit)}
+
+\Htwo{3.\quad Un tabel și un bloc de cod}
+\noindent
+\begin{minipage}[t]{0.52\linewidth}\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\SansFont Perioadă & \SansFont Surse & \SansFont Pondere\\
+\midrule
+1821–1866 & 214 & 18,4\,\%\\
+1866–1918 & 597 & 51,3\,\%\\
+1918–1947 & 352 & 30,3\,\%\\
+\bottomrule
+\end{tabular}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.44\linewidth}\small
+\ttfamily
+\textbackslash begin\{definitie\}\\
+\ \ Sursă primară: \{1859\}\\
+\textbackslash end\{definitie\} \% ș ț
+\end{minipage}
+
+\vspace{10pt}
+\noindent{\SansFont\bfseries\color{accent} Definiție.}\enspace Sursa primară este un document produs în perioada studiată, de un participant sau martor al evenimentelor.
+
+\vspace{4pt}
+\noindent{\SansFont\small Text auxiliar în sans: legende, etichete, note de margine și slide-uri — Ș ș Ț ț Ă ă Â â Î î, 0123456789.}
+
+\Htwo{4.\quad English sample}
+\selectlanguage{english}
+\noindent The humanities begin, more often than not, with a deceptively simple question: what does it mean to understand a text? The answer depends on context — on period, language, and the interpretive tradition in which the reader stands.
+\end{document}

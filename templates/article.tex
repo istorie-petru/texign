@@ -1,0 +1,21 @@
+% Texign article. Options: lang=ro|en, notes=margin|foot|end
+% Build with: texign build THIS-FILE.tex
+\documentclass[notes=margin]{texign-article}
+
+\subject{}          % small label above the title (course, series), optional
+\title{Titlul lucrării}
+\subtitle{}
+\author{István}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Rezumatul lucrării.
+\end{abstract}
+
+\section{Introducere}
+Textul începe aici.\note{O notă.}
+
+\end{document}

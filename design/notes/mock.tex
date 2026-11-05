@@ -1,0 +1,60 @@
+\documentclass[paper=a4,fontsize=10.5pt,twoside=false,parskip=false,headings=standardclasses]{scrbook}
+\usepackage{fontspec}
+\setmainfont{IBMPlexSerif}[Extension=.otf,UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,Scale=0.94]
+\setsansfont{IBMPlexSans}[Extension=.otf,UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,Scale=0.94]
+\usepackage[english]{babel}\babelprovide[import,main]{romanian}
+\usepackage{xcolor,microtype,graphicx}
+\definecolor{ink}{HTML}{1F2328}\definecolor{muted}{HTML}{6A737D}\definecolor{rule}{HTML}{D0D4D9}\definecolor{accent}{HTML}{963A45}
+\usepackage{scrlayer-scrpage}
+\usepackage{proto-notes}
+\NotesMode{\MODE}
+\usepackage{caption}
+\captionsetup{font={sf,footnotesize},labelfont={color=accent,bf},textfont={color=muted},labelsep=quad,justification=raggedright,singlelinecheck=false}
+\usepackage[labelformat=simple]{subcaption}
+\renewcommand\thesubfigure{(\alph{subfigure})}
+\setkomafont{disposition}{\sffamily\bfseries\color{ink}}
+\setkomafont{pageheadfoot}{\sffamily\footnotesize\color{muted}}
+\setkomafont{pagenumber}{\sffamily\footnotesize\color{muted}}
+\deffootnote{1.2em}{0pt}{\textsf{\color{accent}\thefootnotemark}\enspace}
+\setkomafont{footnote}{\sffamily\footnotesize\color{muted}}
+\renewcommand*{\chapterformat}{\textsf{\small\mdseries\color{accent}\addfontfeatures{LetterSpace=10}CAPITOLUL \thechapter}\par\vspace{4pt}}
+\renewcommand*{\chapterlineswithprefixformat}[3]{#2#3\par\vspace{8pt}{\color{accent}\rule{\txnfullwidth}{0.6pt}}}
+\RedeclareSectionCommand[beforeskip=-1sp,afterskip=26pt,font=\sffamily\bfseries\fontsize{21}{26}\selectfont]{chapter}
+\renewcommand*{\sectionformat}{\textcolor{accent}{\thesection}\hspace{0.8em}}
+\renewcommand*{\subsectionformat}{\textcolor{muted}{\thesubsection}\hspace{0.7em}}
+\RedeclareSectionCommand[beforeskip=-20pt,afterskip=8pt,font=\sffamily\bfseries\large]{section}
+\RedeclareSectionCommand[beforeskip=-14pt,afterskip=4pt,font=\sffamily\bfseries\normalsize]{subsection}
+\clearpairofpagestyles\ihead*{\leftmark}\ohead*{\textcolor{accent}{\pagemark}}\automark[section]{chapter}
+\renewcommand*{\chapterpagestyle}{plain.scrheadings}\setlength\txnchapterdrop{40mm}
+\makeatletter\newcommand\Abstract[1]{{\sffamily\small\color{muted}#1\par}\vspace{16pt}\@afterindentfalse\@afterheading}\makeatother
+\newcommand\ph[2][]{\fcolorbox{rule}{rule!35}{\parbox[c][#2][c]{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\centering\sffamily\footnotesize\color{muted}#1}}}
+\newcommand\wide[1]{\noindent\makebox[\linewidth][l]{\begin{minipage}{\txnfullwidth}#1\end{minipage}}}
+\newcommand\TxtP{Legea din 1864 a introdus învățământul primar obligatoriu și gratuit, dar aplicarea ei a depins de resursele fiecărei comune. Rapoartele revizorilor școlari arată o realitate inegală: în unele sate școala funcționa într-o casă închiriată, în altele lipsea cu totul.}
+\newcommand\TxtQ{Generația care a urmat a transformat școala într-un instrument al construcției naționale. Programele, manualele și formarea învățătorilor au devenit subiecte de dezbatere publică.}
+\begin{document}\color{ink}
+\chapter{Școală, stat și națiune (1864–1918)}
+\Abstract{Cum a devenit școala primară un proiect de stat și ce limite a avut acest proiect până la Marea Unire.}
+\TxtP\note{Legea instrucțiunii din 25 noiembrie 1864, art.~31.} \TxtQ\par
+\TxtQ{} Spiru Haret a legat explicit educația de dezvoltarea satului.\note{Spiru Haret (1851–1912), ministru al instrucțiunii în trei rânduri.} \TxtP\par
+\section{Legea instrucțiunii publice}
+\image{revizor-1872.jpg}{Raport de revizor școlar, 1872.}
+\TxtP{} Statul își asumase o misiune pe care nu o putea încă finanța.\note{Murgescu 2010, p.~112; compară cu Iorga 1928, vol.~II, pp.~45–48.} \TxtQ\par
+\TxtP\par\TxtQ\note{Datele provin din anuarele statistice ale Ministerului Instrucțiunii, 1890–1914.}\par
+\subsection{Învățământul primar}
+\TxtP\par\TxtQ\par\TxtP\par
+\begin{figure}[t]
+\begin{subfigure}[t]{0.485\linewidth}\ph[fotografie]{30mm}\caption{Școală rurală, Vâlcea}\end{subfigure}\hfill
+\begin{subfigure}[t]{0.485\linewidth}\ph[fotografie]{30mm}\caption{Școală urbană, Iași}\end{subfigure}\par\medskip
+\begin{subfigure}[t]{0.485\linewidth}\ph[hartă]{30mm}\caption{Rețeaua școlară, 1890}\end{subfigure}\hfill
+\begin{subfigure}[t]{0.485\linewidth}\ph[hartă]{30mm}\caption{Rețeaua școlară, 1914}\end{subfigure}
+\caption{Grilă de imagini (rămâne în corpul textului): clădiri școlare și extinderea rețelei, 1890–1914.}
+\end{figure}
+\TxtP\note{Fotografiile provin din fondul Spiru Haret, Biblioteca Academiei Române.}\par\TxtQ\par
+\image{portret-haret.jpg}{Spiru Haret, cca.~1905.}
+\image{lege-1864.jpg}{Pagina de titlu a Legii instrucțiunii, 1864.}
+\section{Reformele lui Spiru Haret}
+\TxtQ\note{Vezi discuția despre „chestiunea țărănească” din capitolul~4.} \TxtP\par
+\image[wide]{harta-scoli-1914.pdf}{Imagine marcată „wide”: numărul școlilor pe județe, 1914.}
+\TxtP\par\TxtQ\note{Pentru o perspectivă comparativă, vezi Hitchins 1994, cap.~5.}\par\TxtP\par\TxtQ\par\TxtP\par
+\ifx\MODE\ENDMODE\printnotes\fi
+\end{document}

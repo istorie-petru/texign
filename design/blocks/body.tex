@@ -1,0 +1,40 @@
+\documentclass[paper=a4,fontsize=10.5pt,twoside=false,parskip=false]{scrartcl}
+\usepackage[top=22mm,bottom=24mm,inner=22mm,textwidth=118mm,marginparwidth=42mm,marginparsep=8mm,headsep=10mm]{geometry}
+\usepackage{fontspec}
+\setmainfont{IBMPlexSerif}[Extension=.otf,UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,Scale=0.94]
+\setsansfont{IBMPlexSans}[Extension=.otf,UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,Scale=0.94]
+\newfontfamily\condensed{IBMPlexSansCondensed}[Extension=.otf,UprightFont=*-Regular,BoldFont=*-SemiBold,Scale=0.94]
+\usepackage[english]{babel}\babelprovide[import,main]{romanian}
+\usepackage{xcolor,microtype,booktabs,array,colortbl}
+\usepackage[skins,breakable]{tcolorbox}
+\definecolor{ink}{HTML}{1F2328}\definecolor{muted}{HTML}{6A737D}\definecolor{rule}{HTML}{D0D4D9}\definecolor{paper}{HTML}{FFFFFF}
+\definecolor{accent}{HTML}{963A45}\definecolor{cex}{HTML}{4F7149}\definecolor{cnote}{HTML}{647080}\definecolor{cwarn}{HTML}{B0781F}\definecolor{csrc}{HTML}{74624F}
+\pagestyle{empty}\setlength\parindent{1.2em}
+\newcommand\Lbl[1]{{\sffamily\footnotesize\color{muted}\addfontfeatures{LetterSpace=8}\MakeUppercase{#1}}}
+\input{\STYLE}
+\begin{document}\color{ink}
+\noindent\Lbl{\StyleName}\par\smallskip
+\noindent{\small\color{muted}\StyleNote}\par\bigskip
+\noindent Legea din 1864 a introdus învățământul primar obligatoriu și gratuit, dar aplicarea ei a depins de resursele fiecărei comune.
+\begin{txbox}{accent}{Definiție}{Sursă primară}
+Document produs în perioada studiată, de un participant sau martor al evenimentelor.
+\end{txbox}
+\begin{txbox}{cex}{Exemplu}{}
+Raportul unui revizor școlar din 1872 privind școlile rurale din județul Vâlcea.
+\end{txbox}
+\begin{txbox}{cnote}{Notă}{}
+Statisticile oficiale ale vremii supraestimează frecvent numărul elevilor înscriși.
+\end{txbox}
+\begin{txbox}{cwarn}{Atenție}{}
+Nu confundați data adoptării legii cu data intrării ei în vigoare.
+\end{txbox}
+\begin{txbox}{accent}{Rezumat}{}
+\begin{itemize}\setlength\itemsep{1pt}\item Învățământ primar obligatoriu din 1864. \item Rețeaua școlară se dublează până în 1914. \item Reformele Haret leagă școala de sat.\end{itemize}
+\end{txbox}
+\begin{txsource}{Legea instrucțiunii, 25 noiembrie 1864, art.~31}
+„Instrucțiunea primară este obligatorie și gratuită. Părinții sau tutorii sunt datori a trimite copiii la școală de la vârsta de 8 până la 12 ani.”
+\end{txsource}
+\begin{txquote}{Nicolae Iorga, \emph{Istoria învățământului românesc}, 1928}
+Școala satului nu poate fi mai bună decât învățătorul ei.
+\end{txquote}
+\end{document}

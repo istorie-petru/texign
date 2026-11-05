@@ -1,0 +1,51 @@
+\documentclass[paper=a4,fontsize=10.5pt,twoside=false,parskip=false]{scrartcl}
+\usepackage[top=22mm,bottom=24mm,inner=22mm,textwidth=118mm,marginparwidth=42mm,marginparsep=8mm,headsep=10mm]{geometry}
+\usepackage{fontspec}
+\setmainfont{IBMPlexSerif}[Extension=.otf,UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,Scale=0.94]
+\setsansfont{IBMPlexSans}[Extension=.otf,UprightFont=*-Regular,ItalicFont=*-Italic,BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,Scale=0.94]
+\newfontfamily\condensed{IBMPlexSansCondensed}[Extension=.otf,UprightFont=*-Regular,BoldFont=*-SemiBold,Scale=0.94]
+\usepackage[english]{babel}\babelprovide[import,main]{romanian}
+\usepackage{xcolor,microtype,booktabs,array,colortbl}
+\usepackage[skins,breakable]{tcolorbox}
+\definecolor{ink}{HTML}{1F2328}\definecolor{muted}{HTML}{6A737D}\definecolor{rule}{HTML}{D0D4D9}\definecolor{paper}{HTML}{FFFFFF}
+\definecolor{accent}{HTML}{963A45}\definecolor{cex}{HTML}{4F7149}\definecolor{cnote}{HTML}{647080}\definecolor{cwarn}{HTML}{B0781F}\definecolor{csrc}{HTML}{74624F}
+\pagestyle{empty}\setlength\parindent{1.2em}
+\newcommand\Lbl[1]{{\sffamily\footnotesize\color{muted}\addfontfeatures{LetterSpace=8}\MakeUppercase{#1}}}
+
+\begin{document}\color{ink}
+\newcommand\Cap[2]{\noindent{\sffamily\footnotesize\color{accent}\textbf{Tabelul #1}}\enspace{\sffamily\footnotesize\color{muted}#2}\par\vspace{4pt}}
+\noindent\Lbl{T1 · Tabel deschis (booktabs)}\par\smallskip
+\noindent{\small\color{muted}Fără linii verticale și fără fundal. Linie de sus în accent, linii fine între antet și corp. Antet în sans, cifre tabelare aliniate. Clasic academic.}\par\medskip
+\Cap{3.1}{Școli primare rurale și elevi înscriși, 1864–1914}
+{\noindent\small\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}l r r r@{}}
+\arrayrulecolor{accent}\specialrule{0.8pt}{0pt}{3pt}\arrayrulecolor{ink}
+\sffamily An & \sffamily Școli & \sffamily Elevi & \sffamily Elevi / școală\\
+\arrayrulecolor{rule}\specialrule{0.4pt}{3pt}{3pt}
+1864 & 2\,036 & 61\,000 & 30\\ 1880 & 2\,310 & 87\,500 & 38\\ 1890 & 2\,654 & 124\,000 & 47\\ 1900 & 3\,410 & 248\,000 & 73\\ 1914 & 4\,730 & 553\,000 & 117\\
+\specialrule{0.4pt}{3pt}{0pt}
+\end{tabular*}}
+\par\vspace{2pt}\noindent{\sffamily\scriptsize\color{muted}Sursă: anuarele statistice ale Ministerului Instrucțiunii.}
+
+\vspace{28pt}
+\noindent\Lbl{T2 · Tabel structurat}\par\smallskip
+\noindent{\small\color{muted}Antet pe fundal ușor de accent, rânduri alternante foarte discrete, grupuri marcate. Mai ușor de citit în tabele lungi, comparații și fișe de lucru.}\par\medskip
+\Cap{3.2}{Comparație: legile învățământului din 1864 și 1896}
+{\noindent\small\renewcommand\arraystretch{1.45}\rowcolors{2}{rule!25}{paper}\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}>{\leavevmode\sffamily\bfseries\color{muted}}p{30mm} >{\leavevmode}p{40mm} >{\leavevmode}p{40mm}@{}}
+\rowcolor{accent!10!paper}\multicolumn{1}{@{}l}{\leavevmode\sffamily\bfseries\color{accent}Criteriu} & {\sffamily\bfseries\color{accent}Legea din 1864} & {\sffamily\bfseries\color{accent}Legea din 1896}\\
+Obligativitate & 8–12 ani & 7–14 ani\\
+Gratuitate & doar școala primară & primar și normal\\
+Programă & unitară, minimală & diferențiată sat/oraș\\
+Învățători & fără formare obligatorie & școli normale\\
+Finanțare & comunele & statul și comunele\\
+\end{tabular*}}
+
+\vspace{28pt}
+\noindent\Lbl{Varianta condensată (tabele dense)}\par\smallskip
+{\noindent\condensed\small\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}l r r r r r r@{}}
+\arrayrulecolor{accent}\specialrule{0.8pt}{0pt}{3pt}\arrayrulecolor{ink}
+\bfseries Județ & \bfseries 1864 & \bfseries 1880 & \bfseries 1890 & \bfseries 1900 & \bfseries 1914 & \bfseries Creștere\\
+\arrayrulecolor{rule}\specialrule{0.4pt}{3pt}{3pt}
+Vâlcea & 84 & 97 & 112 & 151 & 208 & +148\\ Iași & 102 & 118 & 131 & 176 & 241 & +136\\ Dolj & 121 & 140 & 163 & 214 & 302 & +150\\
+\specialrule{0.4pt}{3pt}{0pt}
+\end{tabular*}}
+\end{document}

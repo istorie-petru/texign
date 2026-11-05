@@ -1,0 +1,338 @@
+% texign-notes.sty — notes, images and the margin column.
+%
+% Author interface
+%   \note{text}                       one note command for every mode
+%   \image[auto|body|wide]{file}{caption}
+%   \begin{imagegrid}[cols]{caption} \gridimage{file}{caption} ... \end{imagegrid}
+%   \printnotes                       endnotes (notes=end)
+%
+% notes=margin: notes and auto images are stacked from the top of the margin
+% column of the page they belong to. Some margin items are anchored to a
+% vertical position (quotation attributions); the stack flows around them.
+% A barrier (end of a title block or chapter opening) makes the stack start
+% below it. Positions come from the previous run, so two runs are needed.
+\NeedsTeXFormat{LaTeX2e}[2023-11-01]
+\ProvidesExplPackage{texign-notes}{2026/11/05}{0.1.0}{Texign notes and margin}
+\RequirePackage{texign-core}
+\RequirePackage{scrlayer-scrpage}
+\RequirePackage{graphicx}
+% vertical positions: zref-savepos (the kernel's ypos property records 0
+% under LuaLaTeX in TeX Live 2026)
+\RequirePackage{zref-savepos}
+
+\int_new:N \g__texign_note_int
+\int_new:N \g__texign_anchor_int
+\tl_new:N \g__texign_endnotes_tl
+\dim_new:N \l__texign_stackskip_dim
+\dim_set:Nn \l__texign_stackskip_dim { 7pt }
+
+% ---- how notes look -------------------------------------------------------
+\cs_new_protected:Npn \__texign_note_mark:n #1
+  { \textsuperscript { \sffamily \color{accent} #1 } }
+\cs_new_protected:Npn \__texign_note_font:
+  { \sffamily \footnotesize \color{muted} \raggedright }
+\cs_new_protected:Npn \__texign_note_label:n #1
+  { \makebox[0pt][r] { \sffamily \color{accent} #1 \hspace{3pt} } }
+\cs_new_protected:Npn \__texign_caption_label:n #1
+  { { \color{accent} \bfseries \texign_string:n { figure } \nobreakspace #1 } \enspace }
+
+% ---- recording where things land -------------------------------------------
+\cs_new:Npn \__texign_page:n #1
+  { \property_ref:nnn {#1} { abspage } { \int_eval:n { \g_shipout_readonly_int + 1 } } }
+% distance from the top of the text area to a recorded ypos
+\cs_new:Npn \__texign_ytop:n #1
+  {
+    \dim_eval:n
+      {
+        \paperheight - 1in - \voffset - \topmargin - \headheight - \headsep
+        - \zref@extractdefault {#1} { posy } { 0 } sp
+      }
+  }
+\cs_new_protected:Npn \__texign_stack_add:nn #1#2
+  {
+    \tl_if_exist:cF { g__texign_stack_#1_tl } { \tl_new:c { g__texign_stack_#1_tl } }
+    \tl_gput_right:cn { g__texign_stack_#1_tl } {#2}
+  }
+\cs_generate_variant:Nn \__texign_stack_add:nn { e , ee }
+
+% a flowing item: #1 record key, #2 content; both are e-expanded now, so
+% callers protect user text with \exp_not:n
+\tl_new:N \l__texign_key_tl
+\cs_generate_variant:Nn \property_record:nn { V }
+\cs_new_protected:Npn \__texign_flow:ee #1#2
+  {
+    \tl_set:Ne \l__texign_key_tl {#1}
+    \property_record:Vn \l__texign_key_tl { abspage }
+    \__texign_stack_add:ee { \__texign_page:n { \l__texign_key_tl } }
+      { \exp_not:N \__texign_ms_flow:n { #2 } }
+  }
+% an anchored item: placed level with the point where it is called
+\cs_new_protected:Npn \__texign_anchor:n #1
+  {
+    \int_gincr:N \g__texign_anchor_int
+    \tl_set:Ne \l__texign_key_tl { texign-a-\int_use:N \g__texign_anchor_int }
+    \property_record:Vn \l__texign_key_tl { abspage }
+    \zsaveposy { \l__texign_key_tl }
+    \__texign_stack_add:ee { \__texign_page:n { \l__texign_key_tl } }
+      { \exp_not:N \__texign_ms_anchor:nn { \__texign_ytop:n { \l__texign_key_tl } } { \exp_not:n {#1} } }
+  }
+% a barrier: the flowing stack of this page starts below this point
+\NewDocumentCommand \texignmarginbarrier { }
+  {
+    \int_gincr:N \g__texign_anchor_int
+    \tl_set:Ne \l__texign_key_tl { texign-a-\int_use:N \g__texign_anchor_int }
+    \property_record:Vn \l__texign_key_tl { abspage }
+    \zsaveposy { \l__texign_key_tl }
+    \__texign_stack_add:ee { \__texign_page:n { \l__texign_key_tl } }
+      { \exp_not:N \__texign_ms_barrier:n { \__texign_ytop:n { \l__texign_key_tl } } }
+  }
+
+% ---- setting the stack at shipout ---------------------------------------
+% Pass 1 sets anchors and barriers and remembers their vertical extent;
+% pass 2 flows the other items from the top, skipping occupied intervals.
+\box_new:N \l__texign_item_box
+\box_new:N \l__texign_out_box
+\seq_new:N \l__texign_busy_seq
+\dim_new:N \l__texign_y_dim
+\dim_new:N \l__texign_start_dim
+\bool_new:N \l__texign_pass_bool   % false: anchors pass, true: flow pass
+\msg_new:nnn { texign } { margin-full }
+  { The~margin~column~on~page~#1~is~full;~some~notes~run~past~the~text~area. }
+
+\cs_new_protected:Npn \__texign_ms_box:n #1
+  {
+    \vbox_set_top:Nn \l__texign_item_box
+      { \hsize = \marginparwidth \linewidth = \hsize \tex_hrule:D height 0pt \scan_stop: \noindent #1 \par }
+  }
+\cs_new_protected:Npn \__texign_ms_put:n #1
+  {
+    \hbox_set:Nn \l__texign_out_box
+      {
+        \box_use:N \l__texign_out_box
+        \hbox_overlap_right:n { \box_move_down:nn {#1} { \box_use:N \l__texign_item_box } }
+      }
+  }
+\cs_new_protected:Npn \__texign_ms_anchor:nn #1#2
+  {
+    \bool_if:NF \l__texign_pass_bool
+      {
+        \__texign_ms_box:n {#2}
+        % align the first baseline of the item with the anchoring line
+        \dim_set:Nn \l_tmpa_dim { \dim_max:nn { 0pt } { #1 - 6.5pt } }
+        \__texign_ms_put:n { \l_tmpa_dim }
+        \seq_put_right:Ne \l__texign_busy_seq
+          { { \dim_use:N \l_tmpa_dim } { \dim_eval:n { \l_tmpa_dim + \box_dp:N \l__texign_item_box } } }
+      }
+  }
+\cs_new_protected:Npn \__texign_ms_barrier:n #1
+  {
+    \bool_if:NF \l__texign_pass_bool
+      { \dim_set:Nn \l__texign_start_dim { \dim_max:nn { \l__texign_start_dim } { #1 + 12pt } } }
+  }
+\cs_new_protected:Npn \__texign_ms_flow:n #1
+  {
+    \bool_if:NT \l__texign_pass_bool
+      {
+        \__texign_ms_box:n {#1}
+        \dim_set:Nn \l_tmpb_dim { \box_dp:N \l__texign_item_box }
+        % move below every occupied interval this item would overlap
+        \seq_map_inline:Nn \l__texign_busy_seq { \__texign_ms_avoid:nn ##1 }
+        \__texign_ms_put:n { \l__texign_y_dim }
+        \dim_add:Nn \l__texign_y_dim { \l_tmpb_dim + \l__texign_stackskip_dim }
+      }
+  }
+\cs_new_protected:Npn \__texign_ms_avoid:nn #1#2
+  {
+    \bool_lazy_and:nnT
+      { \dim_compare_p:nNn { \l__texign_y_dim } < { #2 + \l__texign_stackskip_dim } }
+      { \dim_compare_p:nNn { \l__texign_y_dim + \l_tmpb_dim + \l__texign_stackskip_dim } > {#1} }
+      { \dim_set:Nn \l__texign_y_dim { #2 + \l__texign_stackskip_dim } }
+  }
+\cs_new_protected:Npn \__texign_ms_page:
+  {
+    \tl_set:Ne \l_tmpa_tl { \int_eval:n { \g_shipout_readonly_int + 1 } }
+    \tl_if_exist:cT { g__texign_stack_ \l_tmpa_tl _tl }
+      {
+        \seq_clear:N \l__texign_busy_seq
+        \dim_zero:N \l__texign_start_dim
+        \hbox_set:Nn \l__texign_out_box { }
+        \bool_set_false:N \l__texign_pass_bool
+        \tl_use:c { g__texign_stack_ \l_tmpa_tl _tl }
+        \dim_set_eq:NN \l__texign_y_dim \l__texign_start_dim
+        \bool_set_true:N \l__texign_pass_bool
+        \tl_use:c { g__texign_stack_ \l_tmpa_tl _tl }
+        \dim_compare:nNnT { \l__texign_y_dim } > { \textheight + \l__texign_stackskip_dim }
+          { \msg_warning:nne { texign } { margin-full } { \l_tmpa_tl } }
+        \box_set_ht:Nn \l__texign_out_box { 0pt }
+        \box_set_dp:Nn \l__texign_out_box { 0pt }
+        \box_use:N \l__texign_out_box
+      }
+  }
+\DeclareNewLayer[
+    foreground, textarea,
+    addhoffset = \textwidth + \marginparsep,
+    width = \marginparwidth,
+    contents = { \texign_if_margin:T { \parbox[t]{\layerwidth}{ \vspace*{0pt} \noindent \__texign_ms_page: } } }
+  ]{texign.margin}
+\AddLayersToPageStyle{scrheadings}{texign.margin}
+\AddLayersToPageStyle{plain.scrheadings}{texign.margin}
+
+% ---- \note -------------------------------------------------------------------
+\NewDocumentCommand \note { m }
+  {
+    \str_case:VnF \g_texign_notes_tl
+      {
+        { foot } { \footnote {#1} }
+        { end }
+          {
+            \int_gincr:N \g__texign_note_int
+            \__texign_note_mark:n { \int_use:N \g__texign_note_int }
+            \tl_gput_right:Ne \g__texign_endnotes_tl
+              { \exp_not:N \__texign_endnote:nn { \int_use:N \g__texign_note_int } { \exp_not:n {#1} } }
+          }
+      }
+      {
+        \int_gincr:N \g__texign_note_int
+        \__texign_note_mark:n { \int_use:N \g__texign_note_int }
+        \__texign_flow:ee { texign-n-\int_use:N \g__texign_note_int }
+          { \__texign_note_font: \__texign_note_label:n { \int_use:N \g__texign_note_int } \exp_not:n {#1} }
+      }
+  }
+\cs_new_protected:Npn \__texign_endnote:nn #1#2
+  {
+    \par \noindent \hangindent = 1.4em
+    \makebox[1.4em][l] { \sffamily \small \color{accent} #1 } #2 \par \vspace{3pt}
+  }
+\NewDocumentCommand \printnotes { }
+  {
+    \tl_if_empty:NF \g__texign_endnotes_tl
+      {
+        \section* { \texign_string:n { notes } }
+        { \small \g__texign_endnotes_tl }
+        \tl_gclear:N \g__texign_endnotes_tl
+      }
+  }
+\AtEndDocument { \str_if_eq:VnT \g_texign_notes_tl { end } { \printnotes } }
+
+% ---- images ------------------------------------------------------------------
+% a missing file becomes a labelled placeholder, so drafts always compile
+\cs_new_protected:Npn \__texign_graphic:n #1
+  {
+    \IfFileExists {#1}
+      { \includegraphics [ width = \linewidth ] {#1} }
+      {
+        \fcolorbox{rule}{rule!35}
+          {
+            \parbox[c][0.62\linewidth][c]
+              { \dim_eval:n { \linewidth - 2\fboxsep - 2\fboxrule } }
+              { \centering \sffamily \footnotesize \color{muted} \detokenize{#1} }
+          }
+      }
+  }
+\seq_new:N \g__texign_imgq_seq
+\NewDocumentCommand \image { O{auto} m m }
+  {
+    \str_case:nnF {#1}
+      {
+        { body } { \__texign_imgq_flush: \__texign_img_body:nn {#2} {#3} }
+        { wide } { \__texign_imgq_flush: \__texign_img_wide:nn {#2} {#3} }
+      }
+      {
+        \texign_if_margin:TF
+          {
+            \refstepcounter{figure}
+            \tl_set:Ne \l_tmpa_tl { \thefigure }
+            \__texign_flow:ee { texign-f-\l_tmpa_tl }
+              {
+                \__texign_graphic:n { \exp_not:n {#2} } \par \exp_not:N \vspace{3pt}
+                \__texign_note_font: \__texign_caption_label:n { \l_tmpa_tl }
+                \exp_not:n {#3}
+              }
+          }
+          {
+            \seq_gput_right:Nn \g__texign_imgq_seq { {#2} {#3} }
+            \__texign_imgq_peek:
+          }
+      }
+  }
+\cs_new_protected:Npn \__texign_img_body:nn #1#2
+  { \begin{figure}[htbp] \__texign_graphic:n {#1} \caption{#2} \end{figure} }
+\cs_new_protected:Npn \__texign_img_wide:nn #1#2
+  {
+    \begin{figure}[htbp]
+      \noindent \makebox[\linewidth][l]
+        { \begin{minipage}{\texignfullwidth} \__texign_graphic:n {#1} \caption{#2} \end{minipage} }
+    \end{figure}
+  }
+% consecutive \image calls (spaces and blank lines between them allowed)
+% are collected and set as one row; anything else closes the row
+\cs_new_protected:Npn \__texign_imgq_peek:
+  {
+    \peek_remove_spaces:n
+      {
+        \peek_meaning_remove:NTF \par
+          { \__texign_imgq_peek: }
+          { \peek_meaning:NF \image { \__texign_imgq_flush: \par } }
+      }
+  }
+\cs_new_protected:Npn \__texign_imgq_flush:
+  {
+    \seq_if_empty:NF \g__texign_imgq_seq
+      {
+        \seq_set_eq:NN \l_tmpa_seq \g__texign_imgq_seq
+        \seq_gclear:N \g__texign_imgq_seq
+        \int_set:Nn \l_tmpa_int { \int_min:nn { \seq_count:N \l_tmpa_seq } { 3 } }
+        \dim_set:Nn \l_tmpa_dim { ( \linewidth - 1em * ( \l_tmpa_int - 1 ) ) / \l_tmpa_int }
+        \begin{figure}[htbp]
+          \int_compare:nNnTF { \seq_count:N \l_tmpa_seq } = { 1 }
+            { \exp_last_unbraced:Ne \__texign_img_single:nn { \seq_item:Nn \l_tmpa_seq { 1 } } }
+            {
+              \seq_map_indexed_inline:Nn \l_tmpa_seq
+                {
+                  \int_compare:nNnT {##1} > { 1 }
+                    {
+                      \int_compare:nNnTF { \int_mod:nn { ##1 - 1 } { \l_tmpa_int } } = { 0 }
+                        { \par \medskip } { \hspace{1em} }
+                    }
+                  \__texign_img_cell:nnn { \l_tmpa_dim } ##2
+                }
+            }
+        \end{figure}
+      }
+  }
+% a lone image keeps a modest size: half the text width, caption beside it
+\cs_new_protected:Npn \__texign_img_single:nn #1#2
+  {
+    \begin{minipage}[b]{0.5\linewidth} \__texign_graphic:n {#1} \end{minipage} \hfill
+    \begin{minipage}[b]{0.46\linewidth} \caption{#2} \end{minipage}
+  }
+\cs_new_protected:Npn \__texign_img_cell:nnn #1#2#3
+  { \begin{minipage}[t]{#1} \__texign_graphic:n {#2} \caption{#3} \end{minipage} }
+
+% image grid: always in the body; sub-images (a), (b), ... and one caption
+\RequirePackage{subcaption}
+\int_new:N \l__texign_grid_cols_int
+\int_new:N \l__texign_grid_i_int
+\tl_new:N \l__texign_grid_caption_tl
+\NewDocumentEnvironment { imagegrid } { O{2} m }
+  {
+    \begin{figure}[htbp]
+    \int_set:Nn \l__texign_grid_cols_int {#1}
+    \int_zero:N \l__texign_grid_i_int
+    \tl_set:Nn \l__texign_grid_caption_tl {#2}
+    \dim_set:Nn \l_tmpb_dim
+      { ( \linewidth - 1em * ( \l__texign_grid_cols_int - 1 ) ) / \l__texign_grid_cols_int }
+    \noindent
+  }
+  { \par \caption { \l__texign_grid_caption_tl } \end{figure} }
+\NewDocumentCommand \gridimage { m m }
+  {
+    \int_incr:N \l__texign_grid_i_int
+    \int_compare:nNnT { \l__texign_grid_i_int } > { 1 }
+      {
+        \int_compare:nNnTF
+          { \int_mod:nn { \l__texign_grid_i_int - 1 } { \l__texign_grid_cols_int } } = { 0 }
+          { \par \medskip \noindent } { \hspace{1em} }
+      }
+    \begin{subfigure}[t]{\l_tmpb_dim} \__texign_graphic:n {#1} \caption{#2} \end{subfigure}
+  }

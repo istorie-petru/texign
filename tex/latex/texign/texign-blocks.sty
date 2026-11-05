@@ -1,0 +1,132 @@
+% texign-blocks.sty — information boxes (K1), sources, quotations,
+% captions and tables (T1 default, T2 on request).
+%
+% Author interface
+%   \begin{definition}[title] ... \end{definition}
+%     same for concept, example, remark, warning, summary, instructions
+%   \begin{source}{provenance} ... \end{source}      primary-source extract
+%   \begin{quotation}[attribution] ... \end{quotation}
+%   \structuredtable                                  T2 inside a table
+\NeedsTeXFormat{LaTeX2e}[2023-11-01]
+\ProvidesExplPackage{texign-blocks}{2026/11/05}{0.1.0}{Texign blocks and tables}
+\RequirePackage{texign-core}
+\RequirePackage[skins,breakable]{tcolorbox}
+
+% ---- K1: side bar + 6 % tint, label at the start of the text -------------
+\tcbset
+  {
+    texign/box/.style =
+      {
+        enhanced , breakable , frame~hidden , boxrule = 0pt , sharp~corners ,
+        colback = #1!6!paper , borderline~west = {2.2pt}{0pt}{#1} ,
+        left = 9pt , right = 8pt , top = 5pt , bottom = 5pt ,
+        before~skip = 8pt , after~skip = 8pt , fontupper = \small ,
+        parbox = false ,
+      } ,
+  }
+\cs_new_protected:Npn \__texign_box_label:nnn #1#2#3
+  % #1 colour, #2 string key, #3 optional title
+  {
+    {
+      \sffamily \bfseries \color{#1} \texign_string:n {#2}
+      \tl_if_blank:nF {#3} { \nobreakspace·\nobreakspace #3 } .
+    }
+    \enspace \ignorespaces
+  }
+\cs_new_protected:Npn \__texign_new_box:nn #1#2
+  % #1 environment and string key, #2 colour
+  {
+    \NewDocumentEnvironment {#1} { O{} }
+      {
+        \begin{tcolorbox}[ texign/box = #2 ]
+        \noindent \__texign_box_label:nnn {#2} {#1} {##1}
+      }
+      { \end{tcolorbox} }
+  }
+\__texign_new_box:nn { definition }   { accent }
+\__texign_new_box:nn { concept }      { accent }
+\__texign_new_box:nn { summary }      { accent }
+\__texign_new_box:nn { example }      { example }
+\__texign_new_box:nn { remark }       { remark }
+\__texign_new_box:nn { instructions } { remark }
+\__texign_new_box:nn { warning }      { warning }
+
+% primary-source extract: provenance on its own line, extract in italic
+\NewDocumentEnvironment { source } { m }
+  {
+    \begin{tcolorbox}[ texign/box = source , top = 6pt , bottom = 6pt ]
+    \noindent { \sffamily \bfseries \color{source} \texign_string:n { source } \nobreakspace·\nobreakspace #1 } \par
+    \smallskip \itshape \noindent \ignorespaces
+  }
+  { \end{tcolorbox} }
+
+% ---- quotations ----------------------------------------------------------
+% the attribution sits in the margin, level with the quotation's first line
+% (anchored, so stacked notes flow around it); without a margin column it
+% goes right-aligned below the quotation
+\cs_if_exist:NF \__texign_anchor:n { \cs_new_protected:Npn \__texign_anchor:n #1 { } }
+\tl_new:N \l__texign_attrib_tl
+\RenewDocumentEnvironment { quotation } { o }
+  {
+    \tl_set:Nx \l__texign_attrib_tl { \exp_not:n {#1} }
+    \list { } { \leftmargin = 1.5em \rightmargin = 0pt \topsep = 6pt plus 2pt }
+    \item \relax \small
+    \IfValueT {#1}
+      {
+        \texign_if_margin:T
+          {
+            \leavevmode \__texign_anchor:n
+              { \sffamily \footnotesize \color{muted} \raggedright — \nobreakspace #1 }
+          }
+      }
+    \ignorespaces
+  }
+  {
+    \IfValueT {#1}
+      {
+        \texign_if_margin:F
+          { \par \smallskip \hfill { \sffamily \footnotesize \color{muted} — \nobreakspace #1 } }
+      }
+    \endlist
+  }
+
+% ---- captions -----------------------------------------------------------------
+\RequirePackage{caption}
+\captionsetup
+  {
+    font = { sf , footnotesize } , labelfont = { color = accent , bf } ,
+    textfont = { color = muted } , labelsep = quad ,
+    justification = raggedright , singlelinecheck = false ,
+  }
+\captionsetup[table]{ position = top , skip = 4pt }
+\AtBeginDocument
+  {
+    \renewcommand \figurename { \texign_string:n { figure } }
+    \renewcommand \tablename { \texign_string:n { table } }
+  }
+\renewcommand \thesubfigure { ( \alph{subfigure} ) }
+\captionsetup[sub]{ labelformat = simple }
+
+% ---- tables: T1 (booktabs, accent top rule, grey hairlines) ---------------
+% (plain expandable macros: rules must start with \noalign inside tabulars)
+\RequirePackage{booktabs,array,colortbl}
+\setlength \heavyrulewidth { 0.8pt }
+\setlength \lightrulewidth { 0.4pt }
+\cs_set:Npn \toprule
+  { \arrayrulecolor{accent} \specialrule{\heavyrulewidth}{0pt}{3pt} \arrayrulecolor{rule} }
+\cs_set:Npn \bottomrule
+  { \arrayrulecolor{rule} \specialrule{\lightrulewidth}{3pt}{0pt} \arrayrulecolor{ink} }
+\cs_set:Npn \midrule
+  { \arrayrulecolor{rule} \specialrule{\lightrulewidth}{3pt}{3pt} }
+\AtBeginEnvironment { table } { \small \tl_gset:Nn \g__texign_head_tl { } }
+\tl_new:N \g__texign_head_tl
+% \head{...}: a header cell (sans; accent in structured tables)
+\NewDocumentCommand \head { m } { \leavevmode { \sffamily \bfseries \g__texign_head_tl #1 } }
+% T2: accent-tinted header row, faint alternating rows
+\NewDocumentCommand \structuredtable { }
+  {
+    \renewcommand \arraystretch { 1.4 }
+    \tl_gset:Nn \g__texign_head_tl { \color{accent} }
+    \rowcolors { 2 } { rule!25 } { paper }
+  }
+\NewDocumentCommand \headerrow { } { \rowcolor { accent!10!paper } }

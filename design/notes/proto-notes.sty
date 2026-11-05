@@ -1,0 +1,222 @@
+% proto-notes.sty — design prototype for the Texign note system.
+% One author command, \note{...}; the document decides where notes go:
+%   \NotesMode{margin}  numbered notes stacked from the top of the margin
+%   \NotesMode{foot}    ordinary footnotes
+%   \NotesMode{end}     collected, printed by \printnotes
+% The mode also sets the page layout: only margin mode reserves a margin
+% column. Images follow one universal rule, \image[where]{file}{caption}:
+%   where = auto (default): margin stack in margin mode; otherwise in the
+%           text, consecutive images forming one row (max. 3 across)
+%   where = body: always in the text column (needs more space)
+%   where = wide: across text + margin (or the full text width)
+% Margin mode needs two runs: each note records the page it lands on,
+% and the margin stack for that page is set during shipout.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{proto-notes}{2026/11/05}{0.0}{Texign note prototype}
+\RequirePackage{scrlayer}
+
+\tl_new:N \l__txn_mode_tl
+\tl_set:Nn \l__txn_mode_tl { margin }
+\int_new:N \g__txn_count_int
+\tl_new:N \g__txn_end_tl
+\dim_new:N \l__txn_stackskip_dim
+\dim_set:Nn \l__txn_stackskip_dim { 7pt }
+
+\RequirePackage{geometry}
+\dim_new:N \txnfullwidth
+\NewDocumentCommand \NotesMode { m }
+  {
+    \tl_set:Ne \l__txn_mode_tl {#1}
+    \str_if_eq:VnTF \l__txn_mode_tl { margin }
+      {
+        \geometry{ top=24mm, bottom=28mm, inner=22mm, textwidth=118mm,
+          marginparwidth=42mm, marginparsep=8mm, headsep=10mm }
+        \KOMAoptions{ headwidth=textwithmarginpar, footwidth=textwithmarginpar }
+      }
+      {
+        \geometry{ top=24mm, bottom=28mm, hmargin=30mm,
+          marginparwidth=0pt, marginparsep=0pt, headsep=10mm }
+        \KOMAoptions{ headwidth=text, footwidth=text }
+      }
+    \dim_set:Nn \txnfullwidth { \textwidth + \marginparsep + \marginparwidth }
+  }
+\cs_new:Npn \__txn_if_margin:TF { \str_if_eq:VnTF \l__txn_mode_tl { margin } }
+
+% how a note number looks, in text and in the note itself
+\cs_new:Npn \__txn_mark:n #1
+  { \textsuperscript { \sffamily \color{accent} #1 } }
+\cs_new:Npn \__txn_label:n #1
+  { \makebox[0pt][r]{ \sffamily \color{accent} #1 \hspace{3pt} } }
+\cs_new:Npn \__txn_notefont:
+  { \sffamily \footnotesize \color{muted} \raggedright }
+
+% ---- margin stack -------------------------------------------------------
+% items for absolute page N live in \g__txn_page_N_tl
+\cs_new_protected:Npn \__txn_stack_add:nn #1#2
+  {
+    \tl_if_exist:cF { g__txn_page_#1_tl } { \tl_new:c { g__txn_page_#1_tl } }
+    \tl_gput_right:cn { g__txn_page_#1_tl } { \__txn_item:n {#2} }
+  }
+\cs_new:Npn \__txn_item:n #1 { \par \group_begin: \noindent #1 \par \group_end: \vspace{\l__txn_stackskip_dim} }
+\cs_new_protected:Npn \__txn_record:nn #1#2
+  % #1 record key, #2 stack content; page from previous run (fallback: current)
+  {
+    \property_record:nn {#1} { abspage }
+    \__txn_stack_add:en
+      { \property_ref:nnn {#1} { abspage } { \int_eval:n { \g_shipout_readonly_int + 1 } } }
+      {#2}
+  }
+\cs_generate_variant:Nn \__txn_stack_add:nn { e }
+
+\NewDocumentCommand \note { m }
+  {
+    \int_gincr:N \g__txn_count_int
+    \str_case:VnF \l__txn_mode_tl
+      {
+        { foot } { \footnote {#1} }
+        { end }
+          {
+            \__txn_mark:n { \int_use:N \g__txn_count_int }
+            \tl_gput_right:Ne \g__txn_end_tl
+              { \exp_not:N \__txn_enditem:nn { \int_use:N \g__txn_count_int } { \exp_not:n {#1} } }
+          }
+      }
+      {
+        \__txn_mark:n { \int_use:N \g__txn_count_int }
+        \__txn_record:ee { txn-\int_use:N \g__txn_count_int }
+          { \exp_not:N \__txn_notefont: \exp_not:N \__txn_label:n { \int_use:N \g__txn_count_int } \exp_not:n {#1} }
+      }
+  }
+\cs_generate_variant:Nn \__txn_record:nn { ee }
+
+% ---- side figures -------------------------------------------------------
+% margin mode: the figure joins the margin stack, so it never collides with
+% notes. Other modes: consecutive images are queued and set in the text as
+% one row (max 3 across) as soon as something other than \image follows.
+\seq_new:N \g__txn_figq_seq
+\bool_new:N \g__txn_flushing_bool
+% the graphic itself; a missing file becomes a labelled placeholder
+\cs_new_protected:Npn \__txn_graphic:n #1
+  {
+    \IfFileExists {#1}
+      { \includegraphics [ width = \linewidth ] {#1} }
+      {
+        \fcolorbox{rule}{rule!35}
+          { \parbox[c][0.62\linewidth][c]{ \dim_eval:n { \linewidth - 2\fboxsep - 2\fboxrule } }
+              { \centering \sffamily \footnotesize \color{muted} #1 } }
+      }
+  }
+\NewDocumentCommand \image { O{auto} m m }
+  {
+    \str_case:nnF {#1}
+      {
+        { body }
+          { \__txn_figq_flush: \begin{figure}[htbp] \__txn_graphic:n {#2} \caption{#3} \end{figure} }
+        { wide }
+          {
+            \__txn_figq_flush:
+            \begin{figure}[htbp]
+              \noindent \makebox[\linewidth][l]
+                { \begin{minipage}{\txnfullwidth} \__txn_graphic:n {#2} \caption{#3} \end{minipage} }
+            \end{figure}
+          }
+      }
+      {
+        \__txn_if_margin:TF
+          {
+            \refstepcounter{figure}
+            \tl_set:Ne \l_tmpa_tl { \thefigure }
+            \__txn_record:ee { txf-\l_tmpa_tl }
+              { \exp_not:n { \__txn_graphic:n {#2} } \par \exp_not:N \vspace{3pt} \exp_not:N \__txn_notefont:
+                  { \exp_not:N \color{accent} \exp_not:N \bfseries Figura \exp_not:N \nobreakspace \l_tmpa_tl } \exp_not:N \enspace \exp_not:n {#3} }
+          }
+          {
+            \seq_gput_right:Nn \g__txn_figq_seq { { \__txn_graphic:n {#2} } {#3} }
+            \__txn_figq_peek:
+          }
+      }
+  }
+% look past spaces and blank lines: another \image joins the row,
+% anything else closes it
+\cs_new_protected:Npn \__txn_figq_peek:
+  {
+    \peek_remove_spaces:n
+      {
+        \peek_meaning_remove:NTF \par
+          { \__txn_figq_peek: }
+          { \peek_meaning:NF \image { \__txn_figq_flush: \par } }
+      }
+  }
+\cs_new_protected:Npn \__txn_figq_flush:
+  {
+    \bool_if:NF \g__txn_flushing_bool
+      {
+        \seq_if_empty:NF \g__txn_figq_seq
+          {
+            \bool_gset_true:N \g__txn_flushing_bool
+            \seq_set_eq:NN \l_tmpa_seq \g__txn_figq_seq
+            \seq_gclear:N \g__txn_figq_seq
+            \int_set:Nn \l_tmpa_int { \int_min:nn { \seq_count:N \l_tmpa_seq } { 3 } }
+            \dim_set:Nn \l_tmpa_dim
+              { ( \linewidth - 1em * ( \l_tmpa_int - 1 ) ) / \l_tmpa_int }
+            \begin{figure}[htbp]
+              \int_compare:nNnTF { \seq_count:N \l_tmpa_seq } = { 1 }
+                { \exp_last_unbraced:Ne \__txn_figq_single:nn { \seq_item:Nn \l_tmpa_seq { 1 } } }
+                {
+              \seq_map_indexed_inline:Nn \l_tmpa_seq
+                {
+                  \int_compare:nNnT {##1} > { 1 }
+                    {
+                      \int_compare:nNnTF { \int_mod:nn { ##1 - 1 } { \l_tmpa_int } } = { 0 }
+                        { \par \medskip } { \hspace{1em} }
+                    }
+                  \__txn_figq_cell:nnn { \l_tmpa_dim } ##2
+                }
+                }
+            \end{figure}
+            \bool_gset_false:N \g__txn_flushing_bool
+          }
+      }
+  }
+% a lone image keeps its modest size: half the text width, caption beside it
+\cs_new_protected:Npn \__txn_figq_single:nn #1#2
+  {
+    \begin{minipage}[b]{0.5\linewidth} #1 \end{minipage} \hfill
+    \begin{minipage}[b]{0.46\linewidth} \caption{#2} \end{minipage}
+  }
+\cs_new_protected:Npn \__txn_figq_cell:nnn #1#2#3
+  { \begin{minipage}[t]{#1} #2 \caption{#3} \end{minipage} }
+
+% the layer that prints the stack for the page being shipped out
+\dim_new:N \txnchapterdrop
+\dim_set:Nn \txnchapterdrop { 0pt }
+\cs_new:Npn \__txn_stack_here:
+  {
+    \tl_if_exist:cT { g__txn_page_ \int_eval:n { \g_shipout_readonly_int + 1 } _tl }
+      { \tl_use:c { g__txn_page_ \int_eval:n { \g_shipout_readonly_int + 1 } _tl } }
+  }
+\DeclareNewLayer[
+    foreground, textarea,
+    addhoffset = \textwidth + \marginparsep,
+    width = \marginparwidth,
+    contents = { \parbox[t][\layerheight][t]{\layerwidth}{ \vspace*{0pt} \__txn_stack_here: } }
+  ]{txn.margin}
+\DeclareNewLayer[
+    foreground, textarea,
+    addhoffset = \textwidth + \marginparsep,
+    addvoffset = \txnchapterdrop,
+    width = \marginparwidth,
+    contents = { \parbox[t]{\layerwidth}{ \vspace*{0pt} \__txn_stack_here: } }
+  ]{txn.margin.chapter}
+\AddLayersToPageStyle{scrheadings}{txn.margin}
+\AddLayersToPageStyle{plain.scrheadings}{txn.margin.chapter}
+
+% ---- endnotes -----------------------------------------------------------
+\cs_new:Npn \__txn_enditem:nn #1#2
+  { \par \noindent \hangindent=1.4em \makebox[1.4em][l]{ \sffamily \small \color{accent} #1 } #2 \par \vspace{3pt} }
+\NewDocumentCommand \printnotes { }
+  {
+    \section*{Note}
+    { \small \g__txn_end_tl }
+    \tl_gclear:N \g__txn_end_tl
+  }

@@ -1,0 +1,15 @@
+\KOMAoptions{twoside=false}
+\usepackage[top=24mm,bottom=28mm,inner=22mm,textwidth=118mm,marginparwidth=42mm,marginparsep=8mm,headsep=10mm,includehead=false]{geometry}
+\def\Style{%
+ \renewcommand*{\chapterformat}{\makebox[0pt][l]{\hspace{\dimexpr\textwidth+\marginparsep}\color{accent}\fontsize{44}{44}\selectfont\mdseries\fontseries{l}\selectfont\thechapter}}%
+ 
+ \RedeclareSectionCommand[beforeskip=0pt,afterskip=30pt,font=\sffamily\bfseries\fontsize{22}{27}\selectfont]{chapter}%
+ \renewcommand*{\sectionformat}{\makebox[0pt][l]{\hspace{\dimexpr\textwidth+\marginparsep}\color{accent}\thesection}}%
+ \renewcommand*{\subsectionformat}{\makebox[0pt][l]{\hspace{\dimexpr\textwidth+\marginparsep}\color{muted}\mdseries\thesubsection}}%
+ \RedeclareSectionCommand[beforeskip=20pt,afterskip=6pt,font=\sffamily\bfseries\large]{section}%
+ \RedeclareSectionCommand[beforeskip=14pt,afterskip=4pt,font=\sffamily\bfseries\normalsize]{subsection}%
+ \KOMAoptions{headwidth=textwithmarginpar,footwidth=textwithmarginpar}%
+ \clearpairofpagestyles\ohead{\leftmark\hspace{2em}\textcolor{accent}{\pagemark}}\automark[section]{chapter}%
+ \renewcommand*\chaptermarkformat{}\renewcommand*\sectionmarkformat{}%
+ \renewcommand*{\chapterpagestyle}{scrheadings}}
+\def\Abstract{\noindent{\sffamily\small\color{muted}Cum a devenit școala primară un proiect de stat și ce limite a avut acest proiect până la Marea Unire.}\par\vspace{18pt}}

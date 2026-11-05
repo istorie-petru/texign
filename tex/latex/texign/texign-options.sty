@@ -10,12 +10,12 @@
 \tl_gset:Nn \g_texign_lang_tl { ro }
 \tl_gset:Nn \g_texign_notes_tl { margin }
 \tl_new:N \g_texign_citations_tl
-\tl_gset:Nn \g_texign_citations_tl { notes }
+\tl_gset:Nn \g_texign_citations_tl { academia }
 \keys_define:nn { texign }
   {
     lang  .choices:nn = { ro , en } { \tl_gset_eq:NN \g_texign_lang_tl \l_keys_choice_tl } ,
     notes .choices:nn = { margin , foot , end } { \tl_gset_eq:NN \g_texign_notes_tl \l_keys_choice_tl } ,
-    citations .choices:nn = { notes , authordate , numeric }
+    citations .choices:nn = { academia , chicago , chicago-authordate , authordate , numeric }
       { \tl_gset_eq:NN \g_texign_citations_tl \l_keys_choice_tl } ,
   }
 \NewDocumentCommand \texignsetup { m } { \keys_set:nn { texign } {#1} }

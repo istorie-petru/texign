@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# texign-build FILE.tex — the Texign build sequence, step by step.
+#
+#   1. LuaLaTeX, first pass   reads the document, writes citations, labels
+#                             and margin positions to the auxiliary files
+#   2. Biber                  only when the document has a bibliography
+#   3. LuaLaTeX, more passes  until labels, citations and margin positions
+#                             stop changing (at most 4 more passes)
+#
+# Auxiliary files live in .texign/ next to the source; the PDF is placed
+# next to the source. On failure the first LaTeX error is shown with its
+# file and line.
+set -uo pipefail
+
+src="${1:?usage: texign-build FILE.tex}"
+[[ -f "$src" ]] || { echo "texign: no such file: $src" >&2; exit 2; }
+cd "$(dirname "$src")"
+name="$(basename "${src%.tex}")"
+aux=".texign"; mkdir -p "$aux"
+log="$aux/$name.log"
+
+if [[ -t 1 ]]; then b=$'\e[1m'; g=$'\e[32m'; r=$'\e[31m'; y=$'\e[33m'; n=$'\e[0m'; else b= g= r= y= n=; fi
+step=0
+say()  { printf '  %s%-44s%s' "$b" "$1" "$n"; }
+ok()   { printf '%sok%s %s\n' "$g" "$n" "${1:-}"; }
+fail() { printf '%sfailed%s\n' "$r" "$n"; }
+
+lualatex_pass() {
+  lualatex -interaction=nonstopmode -halt-on-error -file-line-error \
+    -output-directory="$aux" "$name.tex" >/dev/null 2>&1
+}
+show_error() {
+  echo
+  grep -m1 -E '^[^ ]+:[0-9]+: |^! ' -A6 "$log" | sed 's/^/    /'
+  echo "    full log: $(pwd)/$log"
+}
+state() { cat "$aux/$name.aux" "$aux/$name.bbl" "$aux/$name.out" 2>/dev/null | md5sum | cut -d' ' -f1; }
+
+echo "${b}texign build${n} $name.tex"
+t0=$(date +%s.%N)
+
+say "1. LuaLaTeX — first pass"
+if lualatex_pass; then ok; else fail; show_error; exit 1; fi
+
+if [[ -f "$aux/$name.bcf" ]] && grep -q '<bcf:datasource' "$aux/$name.bcf"; then
+  say "2. Biber — bibliography"
+  if biber --quiet --input-directory="$aux" --output-directory="$aux" "$name" >"$aux/biber.out" 2>&1; then
+    entries=$(grep -c '\\entry{' "$aux/$name.bbl" 2>/dev/null || echo 0)
+    ok "($entries entries)"
+  else
+    fail; echo; grep -E 'ERROR|WARN' "$aux/$name.blg" | head -5 | sed 's/^/    /'; exit 1
+  fi
+else
+  say "2. Biber — bibliography"; printf 'not needed\n'
+fi
+
+prev=""; pass=2
+while (( pass <= 5 )); do
+  cur=$(state)
+  [[ "$cur" == "$prev" ]] && break
+  prev="$cur"
+  say "3. LuaLaTeX — pass $pass (references, margin)"
+  if lualatex_pass; then ok; else fail; show_error; exit 1; fi
+  # stop as soon as nothing that feeds the next pass has changed
+  [[ "$(state)" == "$cur" ]] && break
+  pass=$((pass + 1))
+done
+(( pass > 5 )) && printf '  %swarning:%s the document did not stabilise after 5 passes\n' "$y" "$n"
+
+cp "$aux/$name.pdf" "$name.pdf"
+pages=$(pdfinfo "$name.pdf" 2>/dev/null | awk '/^Pages:/{print $2}')
+undef=$(grep -cE 'undefined on input line|Citation .* undefined' "$log" || true)
+warns=$(grep -cE 'Warning' "$log" || true)
+t1=$(date +%s.%N)
+secs=$(awk -v a="$t0" -v b="$t1" 'BEGIN { printf "%.1f", b - a }')
+printf '  → %s%s.pdf%s, %s pages, %s s' "$b" "$name" "$n" "${pages:-?}" "$secs"
+(( undef > 0 )) && printf ', %s%s undefined references/citations%s' "$y" "$undef" "$n"
+printf ' (%s warnings in %s)\n' "$warns" "$log"
+grep -hE "Package texign (Warning|Info)" -A1 "$log" | grep -v '^--' | sed 's/^/    /' | head -6
+exit 0

@@ -1,71 +1,100 @@
 % texign-biblio.sty — bibliography and citations (biblatex + biber).
 %
 % One class option chooses the convention:
-%   citations=notes       citations in notes, full first, short after, ibid.
-%                         (biblatex-ext verbose-trad2; humanities default)
-%   citations=authordate  (Murgescu 2010, 112)   (biblatex-ext authoryear)
-%   citations=numeric     [3, p. 112]            (numeric-comp)
+%   citations=academia          Romanian academic notes (default): N. Iorga,
+%                               Titlu, București, Editura, 1928, p. 45;
+%                               then Idem / Ibidem / op. cit.
+%   citations=chicago           Chicago notes-bibliography (biblatex-chicago)
+%   citations=chicago-authordate  Chicago author-date (biblatex-chicago)
+%   citations=authordate        generic author-date (biblatex-ext)
+%   citations=numeric           numeric [3, p. 112]
 % Author commands: \cite[page]{key} (follows the convention), \textcite,
 % \addbibresource{file.bib}, \printsources.
 % Mark primary sources in the .bib file with  keywords = {primary}.
 \NeedsTeXFormat{LaTeX2e}[2023-11-01]
-\ProvidesExplPackage{texign-biblio}{2026/11/05}{0.1.0}{Texign bibliography}
+\ProvidesExplPackage{texign-biblio}{2026/11/05}{0.2.0}{Texign bibliography}
 \RequirePackage{texign-core}
 \tl_new:N \l__texign_sortlocale_tl
 \tl_set:Ne \l__texign_sortlocale_tl
   { \str_if_eq:VnTF \g_texign_lang_tl { en } { en_GB } { ro_RO } }
+\bool_new:N \g__texign_cite_notes_bool   % citations become notes
 
-\str_case:VnF \g_texign_citations_tl
-  {
-    { authordate }
-      {
-        \RequirePackage
-          [ backend = biber , style = ext-authoryear , autocite = inline ,
-            dashed = false , maxcitenames = 2 , maxbibnames = 99 , uniquename = false ,
-            sortlocale = \l__texign_sortlocale_tl , isbn = false , url = false , eprint = false ]
-          { biblatex }
-      }
-    { numeric }
-      {
-        \RequirePackage
-          [ backend = biber , style = numeric-comp , autocite = inline ,
-            maxbibnames = 99 , sortlocale = \l__texign_sortlocale_tl , isbn = false , url = false , eprint = false ]
-          { biblatex }
-      }
-  }
+\cs_new_protected:Npn \__texign_biblatex:n #1
   {
     \RequirePackage
-      [ backend = biber , style = ext-verbose-trad2 , autocite = footnote ,
-        citetracker = context , ibidtracker = constrict , idemtracker = constrict ,
-        opcittracker = context , dashed = false , maxbibnames = 99 ,
-        sortlocale = \l__texign_sortlocale_tl , isbn = false , url = false , eprint = false ]
+      [ backend = biber , sortlocale = \l__texign_sortlocale_tl ,
+        isbn = false , url = false , eprint = false , #1 ]
       { biblatex }
   }
-
-% types historians use that standard biblatex styles do not define
-\DeclareBibliographyAlias { legislation } { misc }
-\DeclareBibliographyAlias { legal } { misc }
-\DeclareBibliographyAlias { archive } { misc }
+\str_case:VnF \g_texign_citations_tl
+  {
+    { chicago }
+      {
+        \bool_gset_true:N \g__texign_cite_notes_bool
+        \RequirePackage
+          [ notes , backend = biber , sortlocale = \l__texign_sortlocale_tl ,
+            isbn = false , url = false , eprint = false , autocite = footnote ]
+          { biblatex-chicago }
+      }
+    { chicago-authordate }
+      {
+        \RequirePackage
+          [ authordate , backend = biber , sortlocale = \l__texign_sortlocale_tl ,
+            isbn = false , url = false , eprint = false , autocite = inline ]
+          { biblatex-chicago }
+      }
+    { authordate }
+      {
+        \__texign_biblatex:n
+          { style = ext-authoryear , autocite = inline , dashed = false ,
+            maxcitenames = 2 , maxbibnames = 99 , uniquename = false }
+      }
+    { numeric }
+      { \__texign_biblatex:n { style = numeric-comp , autocite = inline , maxbibnames = 99 } }
+  }
+  {
+    % academia
+    \bool_gset_true:N \g__texign_cite_notes_bool
+    \__texign_biblatex:n
+      { style = ext-verbose-trad2 , autocite = footnote ,
+        citetracker = context , ibidtracker = constrict , idemtracker = constrict ,
+        opcittracker = context , dashed = false , maxbibnames = 99 ,
+        mincitenames = 1 , maxcitenames = 3 , singletitle = true }
+  }
 
 % citations that become notes go through \note, so they follow the note
 % mode (margin column, footnotes or endnotes) like every other note
-\str_if_eq:VnT \g_texign_citations_tl { notes }
-  { \AtBeginDocument { \cs_set_protected:Npn \mkbibfootnote #1 { \note {#1} } } }
-\AtBeginDocument { \cs_set_eq:NN \cite \autocite }
+\bool_if:NT \g__texign_cite_notes_bool
+  { \AtBeginDocument { \cs_set_protected:Npn \mkbibfootnote #1 { \note { \bibfootnotewrapper {#1} } } } }
+% \cite is written before punctuation: "gratuit\cite[31]{lege1864}," gives
+% "gratuit,¹" with notes and "gratuit (Legea 1864, 31)," inline
+\AtBeginDocument
+  {
+    \bool_if:NTF \g__texign_cite_notes_bool
+      { \cs_set_eq:NN \cite \autocite }
+      { \DeclareDocumentCommand \cite { } { \leavevmode \unskip \space \autocite } }
+  }
 
-% ---- appearance ------------------------------------------------------------
+% types historians use that standard styles do not define
+\str_if_in:NnF \g_texign_citations_tl { chicago }
+  {
+    \DeclareBibliographyAlias { legislation } { misc }
+    \DeclareBibliographyAlias { legal } { misc }
+    \DeclareBibliographyAlias { archive } { misc }
+  }
+
+% ---- appearance shared by every convention ----------------------------------
 \setlength \bibhang { 1.4em }
 \setlength \bibitemsep { 3pt }
 \renewcommand* \bibfont { \small }
-\DeclareFieldFormat { pages } {#1}      % 45–48, not "pp. 45–48" in the bibliography
-\DeclareFieldFormat { postnote } { \mkpageprefix [ pagination ] { #1 } }
-\renewcommand* \mkbibnamefamily [1] {#1} % never small caps (Plex has none)
+\renewcommand* \mkbibnamefamily [1] {#1}  % never small caps (Plex has none)
 \defbibheading { texign } [ \texign_string:n { bibliography } ] { \section* {#1} }
 \defbibheading { texignsub } [ ] { \subsection* {#1} }
 
+% ---- the Romanian academic convention (citations=academia) ------------------
+\str_if_eq:VnT \g_texign_citations_tl { academia } { \file_input:n { texign-biblio-academia.def } }
+
 % ---- \printsources: primary sources and secondary literature -------------
-% Prints one heading; then the two groups when primary sources exist,
-% otherwise a single list.
 \NewDocumentCommand \printsources { }
   {
     \printbibheading [ heading = texign ]

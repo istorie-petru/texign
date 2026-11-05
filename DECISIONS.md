@@ -109,19 +109,36 @@ Chosen by István. Mockups: `design/blocks/blocks-and-tables.pdf`.
 - Base classes: KOMA-Script.
 - Languages: Romanian (default) and English only.
 
-### 2026-11-05 · Citations and bibliography (technical; default may change)
+### 2026-11-05 · Citations and bibliography
 
-- biblatex + biber. One class option `citations`:
-  `notes` (default; biblatex-ext verbose-trad2: full first citation, short
-  form after, ibid./op. cit.), `authordate` (ext-authoryear), `numeric`.
-- Note citations are routed through `\note`, so they follow the note mode
-  (margin / foot / end) like any other note.
-- `\printsources`: one "Bibliografie" heading, then "Surse primare"
-  (entries with `keywords = {primary}`) and "Literatură secundară".
-- Romanian sorting (`ro_RO`), no small caps for names, `legislation`,
-  `legal` and `archive` entry types accepted (treated as misc for now).
-- Margin overflow: items that do not fit move, in order, to the top of the
-  next page's margin.
+István: notes and bibliography follow the rules of the Romanian Academy
+(a variant) or Chicago.
+
+- biblatex + biber; one class option `citations`:
+  - `academia` (default): variant of the Romanian academic convention
+    (Editura Academiei / historical institutes). Notes: "N. Iorga, *Titlu*,
+    București, Editura, 1928, p. 45."; articles: "I. Popescu, „Titlu”, în
+    *Revista Istorică*, XV, 1929, nr. 3, p. 12–20."; repeats: *Ibidem*,
+    *Idem*, "B. Murgescu, *op. cit.*, p. 114." (short title instead of op.
+    cit. when the author has several works). Bibliography: "Iorga, Nicolae,
+    *Titlu*, București, Editura, 1928." Built on biblatex-ext verbose-trad2
+    (`texign-biblio-academia.def`).
+  - `chicago` / `chicago-authordate`: biblatex-chicago (CMOS 18).
+  - `authordate`, `numeric`: generic biblatex-ext / biblatex styles.
+- `\cite` is written before punctuation; with notes the mark moves after it,
+  inline styles get a leading space.
+- Note citations go through `\note` and follow the note mode.
+- `\printsources`: "Bibliografie", then "Surse primare" (`keywords =
+  {primary}`) and "Literatură secundară". Romanian sorting (`ro_RO`), no
+  small caps; `legislation`, `legal`, `archive` accepted (as misc).
+- Margin overflow: items that do not fit move, in order, to the next page.
+
+### 2026-11-05 · Build sequence
+
+István asked for a clear build sequence. `texign build` runs: LuaLaTeX →
+Biber (only if needed) → LuaLaTeX until the auxiliary files are stable
+(max. 5 passes), prints each step, and stops at the first error with file
+and line. Auxiliary files in `.texign/`, PDF next to the source.
 
 ## Known constraints
 

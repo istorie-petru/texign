@@ -19,9 +19,16 @@ latexmk_run() { latexmk -r "$ROOT/.latexmkrc" "$@"; }
 
 cmd="${1:-help}"; shift || true
 case "$cmd" in
-  build)  need_file "${1:-}"; cd "$(dirname "$1")"; latexmk_run "$(basename "$1")" ;;
-  watch)  need_file "${1:-}"; cd "$(dirname "$1")"; latexmk_run -pvc -view=none "$(basename "$1")" ;;
-  clean)  need_file "${1:-}"; cd "$(dirname "$1")"; latexmk_run -c "$(basename "$1")" ;;
+  build)  need_file "${1:-}"; exec "$ROOT/tools/texign-build" "$1" ;;
+  watch)
+    need_file "${1:-}"
+    command -v inotifywait >/dev/null || die "watch needs inotifywait (package inotify-tools)"
+    dir="$(dirname "$1")"
+    "$ROOT/tools/texign-build" "$1" || true
+    while inotifywait -qq -r -e close_write --exclude '(\.texign/|\.pdf$)' "$dir"; do
+      "$ROOT/tools/texign-build" "$1" || true
+    done ;;
+  clean)  need_file "${1:-}"; rm -rf "$(dirname "$1")/.texign" && echo "removed $(dirname "$1")/.texign" ;;
   new)
     type="${1:-}"; name="${2:-}"
     [[ -n "$type" && -n "$name" ]] || die "usage: texign new TYPE NAME"

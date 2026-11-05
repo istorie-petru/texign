@@ -1,0 +1,73 @@
+\ExplSyntaxOff
+% texign-biblio-academia.def — a variant of the Romanian academic citation
+% conventions (Editura Academiei Române and the historical institutes),
+% on top of biblatex-ext verbose-trad2. Loaded by texign-biblio.sty.
+%
+% Notes:        N. Iorga, Istoria învățământului românesc, București,
+%               Casa Școalelor, 1928, p. 45.
+%               I. Popescu, „Titlul articolului”, în Revista Istorică, XV,
+%               1929, nr. 3, p. 12–20.
+%               then: Ibidem, p. 46. / Idem, … / N. Iorga, op. cit., p. 47.
+% Bibliography: Iorga, Nicolae, Istoria învățământului românesc, București,
+%               Casa Școalelor, 1928.
+
+% names: initials first in notes, "Family, Given" in the bibliography
+\DeclareNameFormat{texign-cite}{%
+  \usebibmacro{name:given-family}{\namepartfamily}{\namepartgiveni}%
+    {\namepartprefix}{\namepartsuffix}%
+  \usebibmacro{name:andothers}}
+\AtEveryCitekey{%
+  \DeclareNameAlias{labelname}{texign-cite}%
+  \DeclareNameAlias{author}{texign-cite}%
+  \DeclareNameAlias{editor}{texign-cite}%
+  \DeclareNameAlias{translator}{texign-cite}}
+\DeclareNameAlias{sortname}{family-given}
+\renewcommand*{\multinamedelim}{\addcomma\space}
+\renewcommand*{\finalnamedelim}{\addspace\bibstring{and}\space}
+\renewcommand*{\revsdnamepunct}{\addcomma}
+
+% place, publisher, year — all separated by commas
+\renewcommand*{\locpubdelim}{\addcomma\space}
+\renewcommand*{\newunitpunct}{\addcomma\space}
+\renewcommand*{\intitlepunct}{\space}
+\renewcommand*{\bibrangedash}{\textendash\nolinebreak[4]}
+
+% "p." for single pages and ranges alike; Ibidem and Idem spelled out
+\DefineBibliographyStrings{romanian}{%
+  page    = {p\adddot},
+  pages   = {p\adddot},
+  ibidem  = {ibidem},
+  idem    = {idem},
+  volume  = {vol\adddot},
+}
+\DeclareFieldFormat{pages}{\mkpageprefix[bookpagination]{#1}}
+\DeclareFieldFormat{postnote}{\mkpageprefix[pagination]{#1}}
+\DeclareFieldFormat[article,periodical]{number}{nr\adddot\addnbspace#1}
+\DeclareFieldFormat[article,periodical]{volume}{#1}
+\DeclareFieldFormat{issuedate}{#1}
+
+% journal: "în Revista Istorică, XV, 1929, nr. 3, p. 12–20"
+\renewbibmacro*{journal+issuetitle}{%
+  \usebibmacro{journal}%
+  \setunit*{\addcomma\space}%
+  \iffieldundef{series}{}{\newunit\printfield{series}\setunit{\addcomma\space}}%
+  \printfield{volume}%
+  \setunit{\addcomma\space}%
+  \usebibmacro{issue+date}%
+  \setunit{\addcomma\space}%
+  \printfield{number}%
+  \setunit{\addcolon\space}%
+  \usebibmacro{issue}%
+  \newunit}
+% repeated citations: "B. Murgescu, op. cit., p. 114" when the author has a
+% single work in the bibliography, otherwise "N. Iorga, Short title, p. 47";
+% Ibidem, Idem and op. cit. in italic
+\renewcommand*{\mkibid}{\emph}
+\renewbibmacro*{cite:title}{%
+  \printtext[bibhyperlink]{%
+    \ifsingletitle
+      {\bibstring[\mkibid]{opcit}}
+      {\printfield[citetitle]{labeltitle}}}}
+
+\renewbibmacro*{issue+date}{\usebibmacro{date}\newunit}
+\ExplSyntaxOn

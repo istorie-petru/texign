@@ -223,8 +223,12 @@
           {
             \int_gincr:N \g__texign_note_int
             \__texign_note_mark:n { \int_use:N \g__texign_note_int }
+            % typeset now (citations and counters as in the text), print later
+            \box_new:c { g__texign_end_ \int_use:N \g__texign_note_int _box }
+            \vbox_gset:cn { g__texign_end_ \int_use:N \g__texign_note_int _box }
+              { \small \hsize = \textwidth \linewidth = \hsize \__texign_endnote:nn { \int_use:N \g__texign_note_int } {#1} }
             \tl_gput_right:Ne \g__texign_endnotes_tl
-              { \exp_not:N \__texign_endnote:nn { \int_use:N \g__texign_note_int } { \exp_not:n {#1} } }
+              { \exp_not:N \__texign_endnote_use:n { \int_use:N \g__texign_note_int } }
           }
       }
       {
@@ -234,6 +238,8 @@
           { \__texign_note_font: \__texign_note_label:n { \int_use:N \g__texign_note_int } #1 }
       }
   }
+\cs_new_protected:Npn \__texign_endnote_use:n #1
+  { \par \noindent \box_use_drop:c { g__texign_end_#1_box } \par }
 \cs_new_protected:Npn \__texign_endnote:nn #1#2
   {
     \par \noindent \hangindent = 1.4em

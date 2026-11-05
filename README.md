@@ -27,6 +27,7 @@ Inside a document you only need:
 | Acronyms | `\acronym{unesco}` |
 | Citation convention | class option `citations=academia` (default, Romanian academic notes), `chicago`, `chicago-authordate`, `authordate`, `numeric` |
 | Citing | `\cite[page]{key}` written before punctuation, `\textcite{key}`; `\addbibresource{file.bib}` |
+| Newspapers | `@article` with `entrysubtype = {newspaper}` |
 | Bibliography | `\printsources` (primary sources and secondary literature; mark primary entries with `keywords = {primary}`) |
 
 ## The build sequence

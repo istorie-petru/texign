@@ -12,6 +12,8 @@
 # file and line.
 set -uo pipefail
 
+ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+export TEXINPUTS="$ROOT/tex/latex/texign//:${TEXINPUTS:-}"
 src="${1:?usage: texign-build FILE.tex}"
 [[ -f "$src" ]] || { echo "texign: no such file: $src" >&2; exit 2; }
 cd "$(dirname "$src")"

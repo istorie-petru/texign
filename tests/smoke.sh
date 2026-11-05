@@ -25,4 +25,13 @@ for src in "$ROOT"/examples/*/*.tex; do
     fi
   done
 done
+# the Romanian Academy profile against the examples of the norms
+dir="$out/academia"; cp -r "$ROOT/tests/academia" "$dir"
+if "$ROOT/tools/texign-build" "$dir/norme.tex" >"$dir/build.out" 2>&1 \
+   && diff <(pdftotext -raw "$dir/norme.pdf" - | grep -v '^$' | sed -n '/^1 Sabina/,$p') \
+           "$ROOT/tests/academia/expected-notes.txt" >"$dir/diff.out"; then
+  echo "ok    academia-norms"
+else
+  echo "FAIL  academia-norms"; sed 's/^/      /' "$dir/diff.out" "$dir/build.out" | tail -12; fail=1
+fi
 exit $fail

@@ -1,66 +1,109 @@
 \ExplSyntaxOff
-% texign-biblio-academia.def — a variant of the Romanian academic citation
-% conventions (Editura Academiei Române and the historical institutes),
+% texign-biblio-academia.def — "Sistem de citare și referințe, conform
+% normelor Academiei Române" (Editura Universității din Oradea, 2024),
 % on top of biblatex-ext verbose-trad2. Loaded by texign-biblio.sty.
 %
-% Notes:        N. Iorga, Istoria învățământului românesc, București,
-%               Casa Școalelor, 1928, p. 45.
-%               I. Popescu, „Titlul articolului”, în Revista Istorică, XV,
-%               1929, nr. 3, p. 12–20.
-%               then: Ibidem, p. 46. / Idem, … / N. Iorga, op. cit., p. 47.
-% Bibliography: Iorga, Nicolae, Istoria învățământului românesc, București,
-%               Casa Școalelor, 1928.
+% Notes (given name, family name, italic title, volume, place, publisher,
+% year, page):
+%   Sabina Cantacuzino, Din viața familiei Ion C. Brătianu, vol. I,
+%     București, Albatros, 1993, p. 13.
+%   Robert Păiușan, Începuturile transporturilor feroviare în Balcani, în
+%     Revista istorică, VIII, 1995, nr. 9-10, p. 671-677.   (both italic)
+%   Paul E. Michelson, Semnificația Memorandului, în David Prodan – puterea
+%     modelului, Cluj-Napoca, Fundația Culturală Română, 1995, p. 250-257.
+%   Gazeta Transilvaniei, XC, nr. 33 din 1 aprilie 1925.
+%   www.warmuseum.ca, 3 nov. 2004.
+% Repeats: Ibidem[, p. 221]. — Idem, <other work> — <Author>, op. cit., p. —
+%   <Author>, <short title>, p. (author with several works); no year: f. a.
+% Bibliography: Iorga, Nicolae, O viață de om așa cum a fost, vol. I-III,
+%   Chișinău, Universitas, 1991.   (alphabetical by author)
+% Author helpers: \cite[Cf.][35]{key}, \cite[passim]{key}; "apud" is
+% written in the note text.
 
-% names: initials first in notes, "Family, Given" in the bibliography
-\DeclareNameFormat{texign-cite}{%
-  \usebibmacro{name:given-family}{\namepartfamily}{\namepartgiveni}%
-    {\namepartprefix}{\namepartsuffix}%
-  \usebibmacro{name:andothers}}
-\AtEveryCitekey{%
-  \DeclareNameAlias{labelname}{texign-cite}%
-  \DeclareNameAlias{author}{texign-cite}%
-  \DeclareNameAlias{editor}{texign-cite}%
-  \DeclareNameAlias{translator}{texign-cite}}
+% names: full "Given Family" in notes, "Family, Given" in the bibliography
 \DeclareNameAlias{sortname}{family-given}
 \renewcommand*{\multinamedelim}{\addcomma\space}
 \renewcommand*{\finalnamedelim}{\addspace\bibstring{and}\space}
 \renewcommand*{\revsdnamepunct}{\addcomma}
 
-% place, publisher, year — all separated by commas
+% every element separated by a comma; ranges with a hyphen (as in the norms)
 \renewcommand*{\locpubdelim}{\addcomma\space}
 \renewcommand*{\newunitpunct}{\addcomma\space}
 \renewcommand*{\intitlepunct}{\space}
-\renewcommand*{\bibrangedash}{\textendash\nolinebreak[4]}
+\DefineBibliographyExtras{romanian}{\renewcommand*{\bibrangedash}{-\nolinebreak[4]}}
+\DefineBibliographyExtras{english}{\renewcommand*{\bibrangedash}{-\nolinebreak[4]}}
 
-% "p." for single pages and ranges alike; Ibidem and Idem spelled out
 \DefineBibliographyStrings{romanian}{%
   page    = {p\adddot},
   pages   = {p\adddot},
   ibidem  = {ibidem},
   idem    = {idem},
   volume  = {vol\adddot},
+  nodate  = {f\adddot\addnbspace a\adddot},
+  urlseen = {},
 }
 \DeclareFieldFormat{pages}{\mkpageprefix[bookpagination]{#1}}
 \DeclareFieldFormat{postnote}{\mkpageprefix[pagination]{#1}}
+
+% titles of studies are italic like book titles (no quotation marks);
+% the periodical or the collective volume is italic as well
+\DeclareFieldFormat[article,incollection,inbook,inproceedings,thesis,unpublished]{title}{\mkbibemph{#1}}
+\DeclareFieldFormat{journaltitle}{\mkbibemph{#1}}
+\DeclareFieldFormat{booktitle}{\mkbibemph{#1}}
+
+% periodicals: "în Revista istorică, VIII, 1995, nr. 9-10, p. 671-677";
+% newspapers (entrysubtype = {newspaper}): "Gazeta Transilvaniei, XC,
+% nr. 33 din 1 aprilie 1925"
 \DeclareFieldFormat[article,periodical]{number}{nr\adddot\addnbspace#1}
 \DeclareFieldFormat[article,periodical]{volume}{#1}
-\DeclareFieldFormat{issuedate}{#1}
-
-% journal: "în Revista Istorică, XV, 1929, nr. 3, p. 12–20"
 \renewbibmacro*{journal+issuetitle}{%
   \usebibmacro{journal}%
   \setunit*{\addcomma\space}%
-  \iffieldundef{series}{}{\newunit\printfield{series}\setunit{\addcomma\space}}%
   \printfield{volume}%
   \setunit{\addcomma\space}%
-  \usebibmacro{issue+date}%
-  \setunit{\addcomma\space}%
-  \printfield{number}%
-  \setunit{\addcolon\space}%
-  \usebibmacro{issue}%
+  \iffieldequalstr{entrysubtype}{newspaper}
+    {\printfield{number}%
+     \setunit{\addspace din\space}%
+     \printdate}
+    {\printdate
+     \setunit{\addcomma\space}%
+     \printfield{number}}%
   \newunit}
-% repeated citations: "B. Murgescu, op. cit., p. 114" when the author has a
-% single work in the bibliography, otherwise "N. Iorga, Short title, p. 47";
+\renewbibmacro*{issue+date}{\printdate\newunit}
+% a newspaper article without an author starts with the newspaper title
+\renewbibmacro*{in:}{%
+  \iffieldequalstr{entrysubtype}{newspaper}
+    {\ifnameundef{author}{}{\bibstring{in}\space}}
+    {\bibstring{in}\space}}
+
+% online sources: "www.warmuseum.ca, 3 noiembrie 2004."
+\DeclareFieldFormat{url}{\url{#1}}
+\DeclareFieldFormat{urldate}{#1}
+\renewbibmacro*{url+urldate}{%
+  \printfield{url}%
+  \setunit{\addcomma\space}%
+  \printurldate}
+
+% no year given: "f. a." (fără an)
+\renewbibmacro*{date}{%
+  \iffieldundef{year}
+    {\ifentrytype{online}{}{\bibstring{nodate}}}
+    {\printdate}}
+
+% the first citation of another work by the author just cited: "Idem, ..."
+\renewbibmacro*{cite:full}{%
+  \usebibmacro{cite:full:citepages}%
+  \global\toggletrue{cbx:fullcite}%
+  \printtext[bibhypertarget]{%
+    \ifciteidem
+      {\bibstring[\mkibid]{idem\thefield{gender}}%
+       \setunit{\addcomma\space}%
+       \usedriver{\DeclareNameAlias{sortname}{default}\clearname{author}}{\thefield{entrytype}}}
+      {\usedriver{\DeclareNameAlias{sortname}{default}}{\thefield{entrytype}}}}%
+  \usebibmacro{shorthandintro}}
+
+% repeats: "Cristian Troncotă, op. cit., p. 50" when the author has a single
+% work in the bibliography, otherwise "<Author>, <short title>, p. 50";
 % Ibidem, Idem and op. cit. in italic
 \renewcommand*{\mkibid}{\emph}
 \renewbibmacro*{cite:title}{%
@@ -68,6 +111,4 @@
     \ifsingletitle
       {\bibstring[\mkibid]{opcit}}
       {\printfield[citetitle]{labeltitle}}}}
-
-\renewbibmacro*{issue+date}{\usebibmacro{date}\newunit}
 \ExplSyntaxOn

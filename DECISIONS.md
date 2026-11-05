@@ -115,14 +115,21 @@ István: notes and bibliography follow the rules of the Romanian Academy
 (a variant) or Chicago.
 
 - biblatex + biber; one class option `citations`:
-  - `academia` (default): variant of the Romanian academic convention
-    (Editura Academiei / historical institutes). Notes: "N. Iorga, *Titlu*,
-    București, Editura, 1928, p. 45."; articles: "I. Popescu, „Titlu”, în
-    *Revista Istorică*, XV, 1929, nr. 3, p. 12–20."; repeats: *Ibidem*,
-    *Idem*, "B. Murgescu, *op. cit.*, p. 114." (short title instead of op.
-    cit. when the author has several works). Bibliography: "Iorga, Nicolae,
-    *Titlu*, București, Editura, 1928." Built on biblatex-ext verbose-trad2
-    (`texign-biblio-academia.def`).
+  - `academia` (default): follows "Sistem de citare și referințe, conform
+    normelor Academiei Române" (Editura Universității din Oradea, 2024),
+    supplied by István. Notes: full "Given Family", *italic title*, vol.,
+    place, publisher, year, p.; studies in periodicals and collective
+    volumes also italic ("…, în *Revista istorică*, VIII, 1995, nr. 9-10,
+    p. 671-677"); newspapers (`entrysubtype = {newspaper}`) "…, XC, nr. 33
+    din 1 aprilie 1925"; online "url, date of access"; no year: "f. a.";
+    repeats *Ibidem*, *Idem*, "Family, *op. cit.*, p." or "Family, short
+    title, p." for authors with several works; "Cf." and "passim" via
+    `\cite[Cf.][35]{key}` and `\cite[passim]{key}`. Ranges with a hyphen,
+    as in the norms. Bibliography alphabetical, "Family, Given, …".
+    Regression test: `tests/academia/` reproduces the examples of the norms.
+    Deliberate deviations: dates in full ("3 noiembrie 2004" rather than
+    "3 nov. 2004") so all dates look alike; within a document a cited
+    article shows the cited page instead of its full page range.
   - `chicago` / `chicago-authordate`: biblatex-chicago (CMOS 18).
   - `authordate`, `numeric`: generic biblatex-ext / biblatex styles.
 - `\cite` is written before punctuation; with notes the mark moves after it,

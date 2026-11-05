@@ -57,7 +57,10 @@ István likes the H4 design (`design/headings/spread-H4.png`).
 
 ### 2026-11-05 · Notes: one author command, `\note{...}`, three modes
 
-- Default `margin`: notes are always numbered and stacked from the top of
+- **Default mode: `foot`** (István, 2026-11-05). `margin` and `end` are
+  opt-in through the class option `notes=`.
+
+- `margin`: notes are always numbered and stacked from the top of
   the margin column of the page they belong to (consistent spacing, no
   alignment with the reference line). On a chapter-opening page the stack
   starts below the title block. Margin figures join the same stack.

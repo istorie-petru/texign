@@ -1,0 +1,182 @@
+% Texign showcase: a text-focused article that uses every element the
+% system provides. Build with: texign build showcase.tex
+%
+% Default options: notes=foot, citations=academia, lang=ro.
+% Try notes=margin or notes=end, or citations=chicago, in the line below.
+\documentclass{texign-article}
+
+\addbibresource{surse.bib}
+
+\subject{Seminar de istorie modernă · Exemplu Texign}
+\title{Școală, stat și națiune (1864–1918)}
+\subtitle{Despre lectura atentă a surselor educaționale}
+\author{István}
+\date{noiembrie 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Lucrarea urmărește felul în care școala primară a devenit, între Legea instrucțiunii din 1864 și Marea Unire, un proiect al statului român, și propune o metodă de lectură atentă a surselor care documentează acest proces. Textul este demonstrativ: unele surse primare și o parte din cifre sunt fictive și servesc doar la ilustrarea sistemului Texign.
+\end{abstract}
+
+\section{Introducere}\label{sec:intro}
+
+Istoria educației se scrie adesea pornind de la legi și de la statistici. Ambele sunt indispensabile, dar ambele spun mai puțin decât par să spună. O lege arată intenția legiuitorului, nu realitatea din sate; o statistică arată ceea ce administrația a putut sau a vrut să numere. Între textul normativ și experiența unui copil care învăța să scrie într-o casă închiriată de primărie se află o distanță pe care istoricul trebuie să o măsoare cu instrumente proprii.\note{Distincția dintre norma juridică și practica socială este un loc comun al istoriografiei educației; o folosim aici doar ca punct de plecare.}
+
+Această lucrare pornește de la o întrebare simplă: ce putem afla despre școala românească a celei de-a doua jumătăți a secolului al XIX-lea dacă citim sursele încet, una lângă alta, și dacă tratăm fiecare document ca pe un text cu autor, destinatar și scop? Întrebarea rămâne actuală: și astăzi, rapoartele \acronym{unesco} despre alfabetizare se sprijină pe aceeași tensiune între normă și practică. Răspunsul nu va fi o sinteză nouă, ci un exercițiu de metodă, sprijinit pe lucrări clasice\cite[45-48]{iorga1928} și pe interpretări economice recente.\cite[112]{murgescu2010}
+
+\begin{definition}[Sursă primară]
+Document produs în perioada studiată, de un participant sau de un martor al evenimentelor: o lege, un raport administrativ, o scrisoare, un articol de presă, un manual.
+\end{definition}
+
+Distincția dintre sursele primare și literatura secundară organizează și bibliografia acestei lucrări. Prima categorie cuprinde textele epocii; a doua, interpretările ulterioare. Lectura atentă presupune să nu le confundăm, dar și să nu le despărțim prea strict: un istoric din 1928 este, pentru noi, deopotrivă interpret și martor al propriei epoci.
+
+\section{Legea și sursele ei}\label{sec:lege}
+
+\subsection{Textul normativ}
+
+Legea instrucțiunii publice din noiembrie 1864 a stabilit principiul învățământului primar obligatoriu și gratuit.\cite[art.~31]{lege1864} Formularea este scurtă și categorică, iar tocmai concizia ei merită atenție.
+
+\begin{source}{Legea instrucțiunii publice, 1864, art.~31}
+„Instrucțiunea primară este obligatorie și gratuită. Părinții sau tutorii sunt datori a trimite copiii la școală de la vârsta de 8 până la 12 ani.”
+\end{source}
+
+Textul nu spune cine plătește învățătorul, cine construiește școala și cine verifică frecvența. Aceste întrebări primesc răspunsuri abia în regulamentele ulterioare și, mai ales, în corespondența dintre comune și minister. Legea creează o obligație fără să creeze și mijloacele ei; aici începe istoria propriu-zisă a școlii rurale.\cite[46]{iorga1928}
+
+\begin{concept}[Distanța normativă]
+Diferența dintre ceea ce prevede o normă și ceea ce se întâmplă efectiv în aplicarea ei. Pentru istoric, distanța normativă nu este un defect al surselor, ci unul dintre obiectele de studiu.
+\end{concept}
+
+\subsection{Rapoartele revizorilor}
+
+Rapoartele revizorilor școlari sunt sursa cea mai apropiată de realitatea sălii de clasă. Revizorul vizita școlile unui județ, nota starea clădirilor, numărul elevilor prezenți și pregătirea învățătorului, apoi trimitea un raport la minister.\cite{raport1872} Tonul acestor texte este adesea critic, uneori dramatic; ele trebuie citite știind că autorul lor avea interesul să obțină fonduri.\cite[Cf.][14]{popescu1929}
+
+\image{revizor-1872.jpg}{Prima pagină a unui raport de revizor școlar, 1872 (ilustrație).\label{fig:raport}}
+
+Un raport tipic, precum cel din figura~\ref{fig:raport}, combină trei registre: inventarul (clădiri, bănci, cărți), statistica (elevi înscriși și prezenți) și judecata morală asupra învățătorului și a comunității. Lectura atentă cere să separăm aceste registre și să ne întrebăm, pentru fiecare, ce putea vedea revizorul într-o vizită de câteva ore.\cite[16]{popescu1929}
+
+\begin{example}
+Un revizor care notează „școala e închisă de trei săptămâni din cauza lucrului la câmp” ne spune ceva despre calendarul agricol și despre prioritățile familiilor, nu doar despre neglijența învățătorului.
+\end{example}
+
+\subsection{Statisticile oficiale}
+
+Anuarele ministerului permit o privire de ansamblu. Tabelul~\ref{tab:scoli} rezumă evoluția rețelei școlare rurale; cifrele sunt rotunjite și au valoare ilustrativă.
+
+\begin{table}[htbp]
+\caption{Școli primare rurale și elevi înscriși, 1864–1914\label{tab:scoli}}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrr@{}}
+\toprule
+\head{An} & \head{Școli} & \head{Elevi înscriși} & \head{Elevi / școală}\\
+\midrule
+1864 & 2\,036 & 61\,000 & 30\\
+1880 & 2\,310 & 87\,500 & 38\\
+1890 & 2\,654 & 124\,000 & 47\\
+1900 & 3\,410 & 248\,000 & 73\\
+1914 & 4\,730 & 553\,000 & 117\\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+Creșterea este spectaculoasă, dar media elevilor pe școală spune o poveste mai complicată: rețeaua s-a extins mai încet decât numărul copiilor înscriși, astfel încât clasele au devenit tot mai aglomerate. Dacă notăm cu $E_t$ numărul elevilor și cu $S_t$ numărul școlilor în anul $t$, atunci raportul
+\[
+  r_t = \frac{E_t}{S_t}, \qquad \frac{r_{1914}}{r_{1864}} = \frac{117}{30} \approx 3{,}9
+\]
+arată că presiunea asupra fiecărei școli aproape s-a cvadruplat în cincizeci de ani.
+
+\begin{warning}
+Numărul elevilor \emph{înscriși} nu este numărul elevilor care frecventau școala. Statisticile vremii supraestimează în mod constant frecvența reală.
+\end{warning}
+
+Diferențele regionale sunt și mai mari. Pentru tabele dense, Texign folosește varianta condensată a fontului (tabelul~\ref{tab:judete}).
+
+\begin{table}[htbp]
+\condensed
+\caption{Școli primare rurale în trei județe, 1864–1914 (cifre ilustrative)\label{tab:judete}}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+\toprule
+\head{Județ} & \head{1864} & \head{1880} & \head{1890} & \head{1900} & \head{1914} & \head{Creștere}\\
+\midrule
+Vâlcea & 84 & 97 & 112 & 151 & 208 & +148\,\%\\
+Iași & 102 & 118 & 131 & 176 & 241 & +136\,\%\\
+Dolj & 121 & 140 & 163 & 214 & 302 & +150\,\%\\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\section{Reformele lui Spiru Haret}\label{sec:haret}
+
+Generația de după 1890 a transformat școala într-un instrument al construcției naționale. Programele, manualele și formarea învățătorilor au devenit subiecte de dezbatere publică, iar presa a urmărit îndeaproape discuțiile parlamentare.\cite{universul1906} Spiru Haret a legat explicit educația de dezvoltarea satului, prin cercuri culturale, bănci populare și biblioteci sătești.\note{Spiru Haret (1851–1912), matematician și astronom, a fost ministru al instrucțiunii în trei rânduri între 1897 și 1910.}
+
+\begin{quotation}[Nicolae Iorga, \emph{Istoria învățământului românesc}, 1928]
+Școala satului nu poate fi mai bună decât învățătorul ei, iar învățătorul nu poate fi mai bun decât satul care îl primește.
+\end{quotation}
+
+Comparația dintre cele două mari legi ale perioadei (tabelul~\ref{tab:legi}) arată mutarea accentului de la principiu la organizare.
+
+\begin{table}[htbp]
+\structuredtable
+\caption{Legile învățământului din 1864 și 1896, comparate\label{tab:legi}}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}>{\leavevmode\sffamily\bfseries\color{muted}}p{30mm} >{\leavevmode}p{40mm} >{\leavevmode}p{40mm}@{}}
+\headerrow \head{Criteriu} & \head{Legea din 1864} & \head{Legea din 1896}\\
+Obligativitate & 8–12 ani & 7–14 ani\\
+Gratuitate & școala primară & primar și normal\\
+Programă & unitară, minimală & diferențiată sat / oraș\\
+Învățători & fără formare obligatorie & școli normale\\
+Finanțare & comunele & statul și comunele\\
+\end{tabular*}
+\end{table}
+
+\subsection{Școala și satul}
+
+Pentru Haret, învățătorul trebuia să fie mai mult decât un profesor: un organizator al comunității. Această viziune apare în circulare, în revistele pedagogice și în memoriile învățătorilor.\cite[Cf.][47]{iorga1928} Ea explică de ce clădirea școlii devine, în aceeași perioadă, un simbol al prezenței statului în sat.
+
+\begin{imagegrid}{Clădiri școlare și extinderea rețelei, 1890–1914 (ilustrații).\label{fig:grila}}
+\gridimage{scoala-valcea.jpg}{Școală rurală, Vâlcea}
+\gridimage{scoala-iasi.jpg}{Școală urbană, Iași}
+\gridimage{harta-1890.pdf}{Rețeaua școlară, 1890}
+\gridimage{harta-1914.pdf}{Rețeaua școlară, 1914}
+\end{imagegrid}
+
+Imaginile din figura~\ref{fig:grila} nu sunt simple ilustrații. Fotografia oficială a unei școli noi, cu elevii aliniați în fața ei, este ea însăși o sursă: arată cum voia administrația să fie văzută.\cite[passim]{hitchins1994}
+
+\begin{remark}
+Fotografiile de epocă au fost adesea înscenate. Data, autorul și destinatarul fotografiei sunt la fel de importante ca imaginea însăși.
+\end{remark}
+
+\subsection{Limitele reformei}
+
+Reformele au rămas, totuși, dependente de resurse. Comunele sărace nu puteau întreține școala, iar salariile învățătorilor au rămas mici până după Primul Război Mondial.\cite[114]{murgescu2010} Răscoala din 1907 a arătat brutal cât de departe era încă satul de proiectul cultural al elitelor.\cite[115]{murgescu2010} Literatura sociologică ulterioară a descris acest decalaj ca pe o formă de reproducere socială prin școală.\cite[Cf.][18-21]{bourdieu1970}
+
+\image[wide]{harta-scoli-1914.pdf}{Densitatea școlilor primare pe județe, 1914 (ilustrație).\label{fig:harta}}
+
+\section{O metodă de lectură}\label{sec:metoda}
+
+Exemplele de mai sus pot fi transformate într-o procedură de lucru pentru seminar. Ea nu înlocuiește interpretarea, dar o face verificabilă.
+
+\begin{instructions}
+\begin{enumerate}
+\item Identificați autorul, destinatarul și data documentului.
+\item Separați informația factuală de judecata autorului.
+\item Comparați documentul cu cel puțin o sursă de alt tip (lege, statistică, presă).
+\item Formulați ce \emph{nu} putea ști autorul documentului.
+\end{enumerate}
+\end{instructions}
+
+Aplicată unui singur raport de revizor, procedura durează o oră; aplicată unei serii de rapoarte din același județ, ea poate schimba imaginea pe care o avem despre o întreagă generație de învățători. Așa cum observa Keith Hitchins, istoria socială a României moderne se scrie tocmai din asemenea serii de documente mărunte.\cite[cap.~5]{hitchins1994}
+
+\begin{summary}
+\begin{itemize}
+\item Legea din 1864 creează o obligație fără mijloacele ei: distanța normativă este punctul de plecare.
+\item Rapoartele, statisticile și presa trebuie citite împreună, fiecare cu interesele autorului ei.
+\item Reformele lui Haret mută accentul de la principiu la organizare, dar rămân limitate de resurse.
+\end{itemize}
+\end{summary}
+
+\section{Concluzii}
+
+Școala primară românească a devenit, în cincizeci de ani, o instituție prezentă în aproape fiecare sat. Sursele care documentează acest proces sunt numeroase, dar niciuna nu este neutră. A le citi atent înseamnă a reconstitui, dincolo de cifre și de texte normative, experiența celor care au predat și au învățat în aceste școli: o istorie lentă, inegală și, tocmai de aceea, instructivă.
+
+\printsources
+\end{document}

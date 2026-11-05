@@ -265,7 +265,7 @@
       {
         \fcolorbox{rule}{rule!35}
           {
-            \parbox[c][0.62\linewidth][c]
+            \parbox[c][ \dim_min:nn { 0.62\linewidth } { 55mm } ][c]
               { \dim_eval:n { \linewidth - 2\fboxsep - 2\fboxrule } }
               { \centering \sffamily \footnotesize \color{muted} \detokenize{#1} }
           }

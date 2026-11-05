@@ -129,4 +129,4 @@
     \tl_gset:Nn \g__texign_head_tl { \color{accent} }
     \rowcolors { 2 } { rule!25 } { paper }
   }
-\NewDocumentCommand \headerrow { } { \rowcolor { accent!10!paper } }
+\cs_new:Npn \headerrow { \rowcolor { accent!10!paper } }   % expandable: \noalign

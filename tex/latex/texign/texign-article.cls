@@ -1,5 +1,5 @@
 % texign-article.cls — articles, papers, essays, reports.
-%   \documentclass[lang=ro|en, notes=margin|foot|end]{texign-article}
+%   \documentclass[lang=ro|en, notes=foot|margin|end, citations=...]{texign-article}
 \NeedsTeXFormat{LaTeX2e}[2023-11-01]
 \ProvidesExplClass{texign-article}{2026/11/05}{0.1.0}{Texign article}
 \RequirePackage{texign-options}

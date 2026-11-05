@@ -16,7 +16,7 @@ for src in "$ROOT"/examples/*/*.tex; do
   for opts in "${variants[@]}"; do
     name="$(basename "${src%.tex}")-${opts//[=,]/-}"
     dir="$out/$name"; mkdir -p "$dir"; cp -r "$(dirname "$src")"/. "$dir"/
-    sed -E "s/\\\\documentclass\[[^]]*\]/\\\\documentclass[$opts]/" "$src" > "$dir/$name.tex"
+    sed -E "s/\\\\documentclass(\[[^]]*\])?\{/\\\\documentclass[$opts]{/" "$src" > "$dir/$name.tex"
     if "$ROOT/tools/texign-build" "$dir/$name.tex" >"$dir/build.out" 2>&1 \
        && ! grep -q 'Package texign Warning' "$dir/.texign/$name.log"; then
       echo "ok    $name"

@@ -109,6 +109,20 @@ Chosen by István. Mockups: `design/blocks/blocks-and-tables.pdf`.
 - Base classes: KOMA-Script.
 - Languages: Romanian (default) and English only.
 
+### 2026-11-05 · Citations and bibliography (technical; default may change)
+
+- biblatex + biber. One class option `citations`:
+  `notes` (default; biblatex-ext verbose-trad2: full first citation, short
+  form after, ibid./op. cit.), `authordate` (ext-authoryear), `numeric`.
+- Note citations are routed through `\note`, so they follow the note mode
+  (margin / foot / end) like any other note.
+- `\printsources`: one "Bibliografie" heading, then "Surse primare"
+  (entries with `keywords = {primary}`) and "Literatură secundară".
+- Romanian sorting (`ro_RO`), no small caps for names, `legislation`,
+  `legal` and `archive` entry types accepted (treated as misc for now).
+- Margin overflow: items that do not fit move, in order, to the top of the
+  next page's margin.
+
 ## Known constraints
 
 - 2026-11-05 · The LaTeX kernel `ypos` property records 0 under LuaLaTeX

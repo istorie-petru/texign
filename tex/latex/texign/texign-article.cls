@@ -9,5 +9,6 @@
 \RequirePackage{texign-layout}
 \RequirePackage{texign-notes}
 \RequirePackage{texign-blocks}
+\RequirePackage{texign-biblio}
 \RequirePackage{hyperref}
 \hypersetup{ hidelinks , colorlinks = true , allcolors = accent , pdfcreator = Texign }

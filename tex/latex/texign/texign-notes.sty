@@ -55,26 +55,37 @@
   }
 \cs_generate_variant:Nn \__texign_stack_add:nn { e , ee }
 
-% a flowing item: #1 record key, #2 content; both are e-expanded now, so
-% callers protect user text with \exp_not:n
+% Margin items are typeset into boxes immediately (so citations, counters
+% and fonts behave as in the text) and only placed at shipout.
 \tl_new:N \l__texign_key_tl
 \cs_generate_variant:Nn \property_record:nn { V }
-\cs_new_protected:Npn \__texign_flow:ee #1#2
+\cs_new_protected:Npn \__texign_item_build:nn #1#2
+  {
+    \box_if_exist:cF { g__texign_item_#1_box } { \box_new:c { g__texign_item_#1_box } }
+    \vbox_gset_top:cn { g__texign_item_#1_box }
+      { \hsize = \marginparwidth \linewidth = \hsize \tex_hrule:D height 0pt \scan_stop: \noindent #2 \par }
+  }
+\cs_generate_variant:Nn \__texign_item_build:nn { V }
+% a flowing item: #1 record key, #2 content
+\cs_new_protected:Npn \__texign_flow:nn #1#2
   {
     \tl_set:Ne \l__texign_key_tl {#1}
+    \__texign_item_build:Vn \l__texign_key_tl {#2}
     \property_record:Vn \l__texign_key_tl { abspage }
     \__texign_stack_add:ee { \__texign_page:n { \l__texign_key_tl } }
-      { \exp_not:N \__texign_ms_flow:n { #2 } }
+      { \exp_not:N \__texign_ms_flow:n { \l__texign_key_tl } }
   }
+\cs_generate_variant:Nn \__texign_flow:nn { e }
 % an anchored item: placed level with the point where it is called
 \cs_new_protected:Npn \__texign_anchor:n #1
   {
     \int_gincr:N \g__texign_anchor_int
     \tl_set:Ne \l__texign_key_tl { texign-a-\int_use:N \g__texign_anchor_int }
+    \__texign_item_build:Vn \l__texign_key_tl {#1}
     \property_record:Vn \l__texign_key_tl { abspage }
     \zsaveposy { \l__texign_key_tl }
     \__texign_stack_add:ee { \__texign_page:n { \l__texign_key_tl } }
-      { \exp_not:N \__texign_ms_anchor:nn { \__texign_ytop:n { \l__texign_key_tl } } { \exp_not:n {#1} } }
+      { \exp_not:N \__texign_ms_anchor:nn { \__texign_ytop:n { \l__texign_key_tl } } { \l__texign_key_tl } }
   }
 % a barrier: the flowing stack of this page starts below this point
 \NewDocumentCommand \texignmarginbarrier { }
@@ -96,14 +107,15 @@
 \dim_new:N \l__texign_y_dim
 \dim_new:N \l__texign_start_dim
 \bool_new:N \l__texign_pass_bool   % false: anchors pass, true: flow pass
+\bool_new:N \l__texign_full_bool
+\tl_new:N \g__texign_carry_tl
 \msg_new:nnn { texign } { margin-full }
-  { The~margin~column~on~page~#1~is~full;~some~notes~run~past~the~text~area. }
+  { A~single~margin~item~on~page~#1~is~taller~than~the~text~area. }
+\msg_new:nnn { texign } { margin-carry }
+  { Margin~items~from~page~#1~continue~on~the~next~page. }
 
 \cs_new_protected:Npn \__texign_ms_box:n #1
-  {
-    \vbox_set_top:Nn \l__texign_item_box
-      { \hsize = \marginparwidth \linewidth = \hsize \tex_hrule:D height 0pt \scan_stop: \noindent #1 \par }
-  }
+  { \box_set_eq:Nc \l__texign_item_box { g__texign_item_#1_box } }
 \cs_new_protected:Npn \__texign_ms_put:n #1
   {
     \hbox_set:Nn \l__texign_out_box
@@ -137,8 +149,22 @@
         \dim_set:Nn \l_tmpb_dim { \box_dp:N \l__texign_item_box }
         % move below every occupied interval this item would overlap
         \seq_map_inline:Nn \l__texign_busy_seq { \__texign_ms_avoid:nn ##1 }
-        \__texign_ms_put:n { \l__texign_y_dim }
-        \dim_add:Nn \l__texign_y_dim { \l_tmpb_dim + \l__texign_stackskip_dim }
+        % what no longer fits moves to the top of the next page, in order
+        \bool_lazy_or:nnTF
+          { \l__texign_full_bool }
+          {
+            \bool_lazy_and_p:nn
+              { \dim_compare_p:nNn { \l__texign_y_dim + \l_tmpb_dim } > { \textheight } }
+              { \dim_compare_p:nNn { \l__texign_y_dim } > { \l__texign_start_dim } }
+          }
+          {
+            \bool_set_true:N \l__texign_full_bool
+            \tl_gput_right:Nn \g__texign_carry_tl { \__texign_ms_flow:n {#1} }
+          }
+          {
+            \__texign_ms_put:n { \l__texign_y_dim }
+            \dim_add:Nn \l__texign_y_dim { \l_tmpb_dim + \l__texign_stackskip_dim }
+          }
       }
   }
 \cs_new_protected:Npn \__texign_ms_avoid:nn #1#2
@@ -154,6 +180,7 @@
     \tl_if_exist:cT { g__texign_stack_ \l_tmpa_tl _tl }
       {
         \seq_clear:N \l__texign_busy_seq
+        \bool_set_false:N \l__texign_full_bool
         \dim_zero:N \l__texign_start_dim
         \hbox_set:Nn \l__texign_out_box { }
         \bool_set_false:N \l__texign_pass_bool
@@ -163,6 +190,15 @@
         \tl_use:c { g__texign_stack_ \l_tmpa_tl _tl }
         \dim_compare:nNnT { \l__texign_y_dim } > { \textheight + \l__texign_stackskip_dim }
           { \msg_warning:nne { texign } { margin-full } { \l_tmpa_tl } }
+        \tl_if_empty:NF \g__texign_carry_tl
+          {
+            \msg_info:nne { texign } { margin-carry } { \l_tmpa_tl }
+            \tl_set:Ne \l_tmpb_tl { \int_eval:n { \l_tmpa_tl + 1 } }
+            \tl_if_exist:cF { g__texign_stack_ \l_tmpb_tl _tl } { \tl_new:c { g__texign_stack_ \l_tmpb_tl _tl } }
+            \tl_gset:ce { g__texign_stack_ \l_tmpb_tl _tl }
+              { \exp_not:V \g__texign_carry_tl \exp_not:v { g__texign_stack_ \l_tmpb_tl _tl } }
+            \tl_gclear:N \g__texign_carry_tl
+          }
         \box_set_ht:Nn \l__texign_out_box { 0pt }
         \box_set_dp:Nn \l__texign_out_box { 0pt }
         \box_use:N \l__texign_out_box
@@ -194,8 +230,8 @@
       {
         \int_gincr:N \g__texign_note_int
         \__texign_note_mark:n { \int_use:N \g__texign_note_int }
-        \__texign_flow:ee { texign-n-\int_use:N \g__texign_note_int }
-          { \__texign_note_font: \__texign_note_label:n { \int_use:N \g__texign_note_int } \exp_not:n {#1} }
+        \__texign_flow:en { texign-n-\int_use:N \g__texign_note_int }
+          { \__texign_note_font: \__texign_note_label:n { \int_use:N \g__texign_note_int } #1 }
       }
   }
 \cs_new_protected:Npn \__texign_endnote:nn #1#2
@@ -242,11 +278,10 @@
           {
             \refstepcounter{figure}
             \tl_set:Ne \l_tmpa_tl { \thefigure }
-            \__texign_flow:ee { texign-f-\l_tmpa_tl }
+            \__texign_flow:en { texign-f-\l_tmpa_tl }
               {
-                \__texign_graphic:n { \exp_not:n {#2} } \par \exp_not:N \vspace{3pt}
-                \__texign_note_font: \__texign_caption_label:n { \l_tmpa_tl }
-                \exp_not:n {#3}
+                \__texign_graphic:n {#2} \par \vspace{3pt}
+                \__texign_note_font: \__texign_caption_label:n { \thefigure } #3
               }
           }
           {

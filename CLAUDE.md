@@ -12,6 +12,7 @@ consistent across all document types.
 - `texign-layout.sty`: geometry per note mode, H4 headings, page styles, title block.
 - `texign-notes.sty`: \note, \image, imagegrid, margin stack (two runs; zref-savepos).
 - `texign-blocks.sty`: K1 boxes, source, quotation, captions, T1/T2 tables.
+- `texign-biblio.sty`: biblatex profiles (notes / authordate / numeric); note citations go through \note.
 - Internal code is expl3 with prefix `texign`; author commands are short and unprefixed.
 
 ## Rules
@@ -25,3 +26,5 @@ consistent across all document types.
 - The kernel `ypos` property records 0 under LuaLaTeX (TL 2026): use zref-savepos.
 - Libertinus Mono lacks ș/ț; Plex has no small caps (use \acronym).
 - Booktabs rule macros must stay plain expandable macros (\noalign).
+- Margin items are typeset into boxes when called (citations, counters) and only placed at shipout.
+- Harmless biblatex warning "Language 'nil' not supported" at \begin{document}; not yet traced.

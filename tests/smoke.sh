@@ -9,12 +9,13 @@ fail=0
 for src in "$ROOT"/examples/*/*.tex; do
   for mode in margin foot end; do
     name="$(basename "${src%.tex}")-$mode"
-    sed -E "s/notes=(margin|foot|end)/notes=$mode/" "$src" > "$out/$name.tex"
-    if (cd "$out" && TEXINPUTS="$(dirname "$src")//:$TEXINPUTS" latexmk -r "$ROOT/.latexmkrc" "$name.tex" >/dev/null 2>&1) \
-       && ! grep -q 'Package texign Warning' "$out/$name.log"; then
+    dir="$out/$name"; mkdir -p "$dir"; cp -r "$(dirname "$src")"/. "$dir"/
+    sed -E "s/notes=(margin|foot|end)/notes=$mode/" "$src" > "$dir/$name.tex"
+    if (cd "$dir" && latexmk -r "$ROOT/.latexmkrc" "$name.tex" >/dev/null 2>&1) \
+       && ! grep -q 'Package texign Warning' "$dir/$name.log"; then
       echo "ok    $name"
     else
-      echo "FAIL  $name"; grep -E '^\S+:[0-9]+:|texign Warning' -A2 "$out/$name.log" | head -8 || true; fail=1
+      echo "FAIL  $name"; grep -E '^\S+:[0-9]+:|texign Warning' -A2 "$dir/$name.log" | head -8 || true; fail=1
     fi
   done
 done

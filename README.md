@@ -25,6 +25,9 @@ Inside a document you only need:
 | Quotations | `\begin{quotation}[attribution] ... \end{quotation}` |
 | Tables | booktabs rules as usual, `\head{..}` for header cells, `\structuredtable` for the T2 style |
 | Acronyms | `\acronym{unesco}` |
+| Citation convention | class option `citations=notes` (default), `authordate`, `numeric` |
+| Citing | `\cite[page]{key}`, `\textcite{key}`; `\addbibresource{file.bib}` |
+| Bibliography | `\printsources` (primary sources and secondary literature; mark primary entries with `keywords = {primary}`) |
 
 ## Layout of this repository
 

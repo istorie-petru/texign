@@ -52,10 +52,9 @@
 % ---- languages ---------------------------------------------------------------
 % babel's ini locales (the Romanian .ldf is not part of every TeX Live).
 \RequirePackage{babel}
-\babelprovide[import]{romanian}
-\babelprovide[import]{english}
-\AtBeginDocument
-  { \str_if_eq:VnTF \g_texign_lang_tl { en } { \selectlanguage{english} } { \selectlanguage{romanian} } }
+\str_if_eq:VnTF \g_texign_lang_tl { en }
+  { \babelprovide[import]{romanian} \babelprovide[import,main]{english} }
+  { \babelprovide[import]{english} \babelprovide[import,main]{romanian} }
 \RequirePackage{csquotes}
 
 % localised strings used by Texign components: \texignstring{key}
@@ -67,6 +66,8 @@
     remark = Notă , warning = Atenție , summary = Rezumat ,
     instructions = Instrucțiuni , source = Sursă , notes = Note ,
     figure = Figura , table = Tabelul , chapter = Capitolul ,
+    bibliography = Bibliografie , primary = Surse~primare ,
+    secondary = Literatură~secundară ,
   }
 \prop_gset_from_keyval:Nn \g__texign_strings_en_prop
   {
@@ -74,6 +75,8 @@
     remark = Note , warning = Warning , summary = Summary ,
     instructions = Instructions , source = Source , notes = Notes ,
     figure = Figure , table = Table , chapter = Chapter ,
+    bibliography = Bibliography , primary = Primary~sources ,
+    secondary = Secondary~literature ,
   }
 \cs_new:Npn \texign_string:n #1
   { \prop_item:cn { g__texign_strings_ \g_texign_lang_tl _prop } {#1} }

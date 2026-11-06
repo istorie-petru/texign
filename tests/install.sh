@@ -18,6 +18,7 @@ git_src() { git -C "$tmp/src" -c user.name=test -c user.email=test@example.inval
 # a source repository with three releases; the last one does not compile
 git clone -q "file://$ROOT" "$tmp/src"
 git_src remote remove origin   # updates come from this copy, not from $ROOT
+git_src tag -l | while read -r t; do git_src tag -d "$t" >/dev/null; done   # only the test releases below
 git_src tag v0.0.1
 echo 0.0.2 >"$tmp/src/VERSION"; git_src commit -qam 'Release v0.0.2'; git_src tag v0.0.2
 ctl="$tmp/src/scripts/texign-ctl"

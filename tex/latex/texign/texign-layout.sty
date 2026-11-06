@@ -46,8 +46,26 @@
       }
   }
 
-\setlength \parindent { 1.2em }
-\setlength \parskip { 0pt }
+% airy text (István, 2026-11-06): block paragraphs separated by half a line
+\setlength \parindent { 0pt }
+\setlength \parskip { 0.5\baselineskip plus 2pt minus 1pt }
+% space around figures, tables and other floats
+\setlength \textfloatsep { 20pt plus 4pt minus 4pt }
+\setlength \floatsep { 16pt plus 4pt minus 4pt }
+\setlength \intextsep { 18pt plus 4pt minus 4pt }
+% page breaks: no single first or last line of a paragraph on a page (the
+% first two and last two lines stay together); a heading keeps at least
+% five lines of text with it, so a section never starts at a page foot
+\clubpenalties 3 ~ 10000 ~ 10000 ~ 150 \scan_stop:
+\widowpenalties 3 ~ 10000 ~ 10000 ~ 150 \scan_stop:
+\RequirePackage{needspace}
+% (a heading directly under another heading never asks for a new page: the
+% space was already reserved by the first one)
+\cs_new_protected:Npn \__texign_need:n #1
+  { \legacy_if:nF { @nobreak } { \needspace { #1 \baselineskip } } }
+\AddToHook { cmd/section/before } { \__texign_need:n { 9 } }
+\AddToHook { cmd/subsection/before } { \__texign_need:n { 6 } }
+\AddToHook { cmd/subsubsection/before } { \__texign_need:n { 5 } }
 % justified Romanian text has long words: allow a little extra stretch
 % rather than lines running into the margin
 \setlength \emergencystretch { 2.5em }

@@ -209,3 +209,10 @@ and line. Auxiliary files in `.texign/`, PDF next to the source.
 - 2026-11-05 · IBM Plex Serif has no true small caps.
 - 2026-11-05 · Romanian babel `.ldf` not installed locally; use
   `\babelprovide[import]{romanian}` (ini-based locale).
+
+### 2026-11-06 · Airier layout (István)
+
+- Block paragraphs: no indent, half a line between paragraphs.
+- More space around floats and boxes; figure captions always below images.
+- Page breaks: first/last two lines of a paragraph stay together; headings
+  keep several lines of text with them (needspace).

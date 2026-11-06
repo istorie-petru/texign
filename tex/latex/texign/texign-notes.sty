@@ -375,17 +375,13 @@
         \end{figure}
       }
   }
-% a lone image keeps a modest size: half the text width, caption beside it
 % a lone image keeps a modest size (at most half the text width, height
-% capped); the caption takes the rest of the line, aligned with its foot
-\box_new:N \l__texign_img_box
+% capped), centred, with its caption underneath
 \cs_new_protected:Npn \__texign_img_single:nn #1#2
   {
-    \hbox_set:Nn \l__texign_img_box
-      { \linewidth = 0.5\linewidth \__texign_graphic:n {#1} }
-    \noindent \box_use:N \l__texign_img_box \hspace{1.2em}
-    \begin{minipage}[b]{ \dim_eval:n { \linewidth - \box_wd:N \l__texign_img_box - 1.2em } }
-      \caption{#2}
+    \centering
+    \begin{minipage}{0.6\linewidth}
+      \centering \__texign_graphic:n {#1} \caption{#2}
     \end{minipage}
   }
 \cs_new_protected:Npn \__texign_img_cell:nnn #1#2#3

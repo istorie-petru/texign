@@ -19,15 +19,20 @@ consistent across all document types.
 - `texign-book.cls`: scrbook, two-sided by default; title page, part pages, appendix label, back matter at chapter level; notes restart per chapter (\g__texign_note_int printed, \g__texign_note_id_int for keys).
 - `\texignwide{...}`: text + margin width, extends to the outer side on even pages (\ifthispageodd, two passes).
 - `tools/texign-build`: the build sequence (lualatex → biber → bib2gls → lualatex until stable); `tools/texign` wraps it.
+- `scripts/texign-ctl`: user-level install/update/revert/status/remove (releases in ~/.local/share/texign, links in TEXMFHOME and ~/.local/bin); `scripts/texign-update` is the short form. Test: `tests/install.sh`.
+- Releases: `VERSION` + CHANGELOG + the version of both classes, checked by `tools/release-check`; process in CONTRIBUTING.md. CI in `.github/workflows/`.
 - Internal code is expl3 with prefix `texign`; author commands are short and unprefixed.
 
 ## Rules
 - Author interface stays small; new options need a reason recorded in DECISIONS.md.
 - New user-visible strings go into both string tables in texign-core.sty.
 - Run `tests/smoke.sh` after every change; it must print only `ok` lines.
+  After changing `scripts/` or `tools/texign`, also run `tests/install.sh`.
+- User-facing changes get a line under `## [Unreleased]` in CHANGELOG.md.
 - Local commits in this repo are fine. No remotes, pushes, GitHub actions,
   publishing, destructive git operations or installs without István's approval.
 - Fonts must come from TeX Live; never depend on system fonts.
+- Never add Co-Authored-By or Claude-Session trailers to commits.
 
 ## Known constraints
 - The kernel `ypos` property records 0 under LuaLaTeX (TL 2026): use zref-savepos.

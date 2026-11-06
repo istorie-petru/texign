@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# texign-update -- the short command for updating Texign installed with texign-ctl.
+#
+#   texign-update            install the newest release; it must pass a test build before it becomes current
+#   texign-update --revert   go back to the release that was current before the last update
+set -euo pipefail
+
+case "${1:-}" in
+  "" | update)       exec texign-ctl update ;;
+  --revert | revert) exec texign-ctl revert ;;
+  -h | --help)       sed -n '2,5p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+  *) echo "usage: texign-update [--revert]" >&2; exit 2 ;;
+esac

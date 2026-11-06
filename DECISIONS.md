@@ -216,3 +216,32 @@ and line. Auxiliary files in `.texign/`, PDF next to the source.
 - More space around floats and boxes; figure captions always below images.
 - Page breaks: first/last two lines of a paragraph stay together; headings
   keep several lines of text with them (needspace).
+
+### 2026-11-06 · Distribution and installation (István)
+
+Modelled on curodav (`istorie-petru/curodav`): a README that starts with
+"Is this for you?" and "Try it in 2 minutes", an everyday-commands table,
+the detailed documentation on the GitHub wiki, `VERSION` + `CHANGELOG.md`,
+one `Release vX.Y.Z: <title>` commit per release, and a `-ctl` script with
+install / update / revert / status / remove.
+
+- `scripts/texign-ctl` installs for one user, never with root: releases
+  under `~/.local/share/texign/releases/`, `current` and `previous` links
+  swapped atomically, `TEXMFHOME/tex/latex/texign` and `~/.local/bin/texign`
+  pointing at `current`. Three releases kept. `--main` follows the branch,
+  `--dev` links to a clone (replaces the old `texign install`).
+- An update must build `tests/install/check.tex` before it becomes current
+  (curodav's health check before the swap); a failure leaves the old
+  release in place. `texign-update` is the short command.
+- Installs and release archives come from `git archive`: `design/`,
+  `.github/`, `CLAUDE.md` and `PROPOSAL.md` are export-ignored.
+- `VERSION` is the source of truth; the two classes carry the same version
+  in `\ProvidesExplClass`; packages keep their own. `tools/release-check`
+  verifies VERSION, CHANGELOG and the classes (and the tag in CI).
+- Licence: AGPL-3.0 (István), as curodav; documents built with Texign
+  are not covered. The fonts keep their own licence (SIL OFL).
+- No AI co-authorship trailers on commits (as curodav).
+- CI (GitHub Actions, `texlive/texlive:latest` + Java + poppler):
+  release-check, `tests/smoke.sh`, `tests/install.sh` on every push and pull
+  request. A `vX.Y.Z` tag publishes a GitHub release with the CHANGELOG
+  entry, source archives and the showcase and book PDFs.

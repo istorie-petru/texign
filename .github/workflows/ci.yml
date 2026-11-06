@@ -1,0 +1,31 @@
+name: CI
+
+# Every push to main and every pull request builds all examples in every
+# note mode and citation convention (tests/smoke.sh), checks the citation
+# norms and the Romanian glossary order, and runs the install life cycle of
+# texign-ctl (tests/install.sh), in a full TeX Live.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: texlive/texlive:latest
+    steps:
+      - name: Tools outside TeX Live
+        # bib2gls needs Java; the tests read PDFs with pdftotext; checkout
+        # needs git for a real clone (tests/install.sh clones it).
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends git default-jre-headless poppler-utils >/dev/null
+      - uses: actions/checkout@v4
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Version numbers
+        run: tools/release-check
+      - name: Examples, citation norms, glossary order
+        run: tests/smoke.sh
+      - name: Install, update, revert, remove
+        run: TEXIGN_ALLOW_ROOT=1 tests/install.sh

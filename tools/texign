@@ -5,7 +5,9 @@
 #   texign new TYPE NAME      start a document from a template (article, ...)
 #   texign clean FILE.tex     remove build files (keeps the PDF)
 #   texign doctor             check the toolchain and fonts
-#   texign install            link the classes into ~/texmf (user-level, no root)
+#   texign version            print the installed version
+#   texign update             install the newest release (texign-ctl update)
+#   texign install            development mode: TeX and texign use this clone (texign-ctl install --dev)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
@@ -47,12 +49,10 @@ case "$cmd" in
     done
     "$ROOT/tests/smoke.sh" >/dev/null 2>&1 && echo "ok    test build" || { echo "FAIL  test build (run tests/smoke.sh)"; ok=0; }
     ((ok)) && echo "Texign is ready." || exit 1 ;;
-  install)
-    dest="$(kpsewhich -var-value TEXMFHOME)/tex/latex/texign"
-    [[ -e "$dest" && ! -L "$dest" ]] && die "$dest exists and is not a link; not touching it"
-    mkdir -p "$(dirname "$dest")" && ln -sfn "$TEXDIR" "$dest"
-    mkdir -p "$HOME/.local/bin" && ln -sfn "$ROOT/tools/texign" "$HOME/.local/bin/texign"
-    echo "linked $dest -> $TEXDIR"; echo "linked ~/.local/bin/texign" ;;
-  help|-h|--help) sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//' ;;
+  install) exec "$ROOT/scripts/texign-ctl" install --dev ;;
+  update)  command -v texign-ctl >/dev/null || die "texign-ctl not found; install with scripts/texign-ctl install"
+           exec texign-ctl update "$@" ;;
+  version) cat "$ROOT/VERSION" ;;
+  help|-h|--help) sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//' ;;
   *) die "unknown command '$cmd' (try: texign help)" ;;
 esac

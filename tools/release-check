@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# release-check [vX.Y.Z] -- are the version numbers of a release consistent?
+#
+#   VERSION                     X.Y.Z, the one source of truth
+#   CHANGELOG.md                has a "## [X.Y.Z]" entry
+#   texign-article.cls, -book   \ProvidesExplClass carries X.Y.Z
+#   the tag (when given)        is vX.Y.Z
+#
+# release-check --notes   prints the CHANGELOG entry of VERSION (the release notes)
+set -euo pipefail
+ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+version="$(tr -d '[:space:]' <"$ROOT/VERSION")"
+
+if [[ "${1:-}" == --notes ]]; then
+  awk -v v="## [$version]" '$0 == v {on = 1; next} on && /^## \[/ {exit} on' "$ROOT/CHANGELOG.md" | sed '/./,$!d'
+  exit 0
+fi
+
+fail=0
+bad() { echo "FAIL  $*"; fail=1; }
+[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || bad "VERSION is '$version', not X.Y.Z"
+grep -qxF "## [$version]" "$ROOT/CHANGELOG.md" || bad "CHANGELOG.md has no '## [$version]' entry"
+for cls in texign-article texign-book; do
+  v="$(sed -nE 's/.*\\ProvidesExplClass\{'"$cls"'\}\{[^}]*\}\{([^}]*)\}.*/\1/p' "$ROOT/tex/latex/texign/$cls.cls")"
+  [[ "$v" == "$version" ]] || bad "$cls.cls says $v, VERSION says $version"
+done
+if [[ -n "${1:-}" && "$1" != "v$version" ]]; then bad "tag $1 does not match VERSION $version"; fi
+(( fail )) || echo "ok    release $version"
+exit $fail

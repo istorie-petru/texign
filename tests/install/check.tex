@@ -1,0 +1,13 @@
+% The document every new release must build before texign-ctl makes it
+% current: the class, Plex fonts, a note and a citation through Biber.
+\documentclass{texign-article}
+\addbibresource{check.bib}
+\title{Verificare}
+\author{Texign}
+\begin{document}
+\maketitle
+\section{Instalare}
+Clasa, fonturile și bibliografia funcționează: ș, ț, ă, î, â.\note{O notă.}
+Citare\cite[13]{schnapp}.
+\printsources
+\end{document}

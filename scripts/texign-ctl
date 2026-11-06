@@ -1,0 +1,308 @@
+#!/usr/bin/env bash
+# texign-ctl -- install, update and remove Texign for one user, without root.
+#
+#   /path/to/clone/scripts/texign-ctl install          first install, from a clone (latest release tag)
+#   /path/to/clone/scripts/texign-ctl install --main   the same, following the main branch instead of releases
+#   /path/to/clone/scripts/texign-ctl install --dev    link the classes and the command to that clone itself,
+#                                                      for working on Texign (no releases, no copies)
+#   texign-ctl update [--ref REF]   install the newest release (or REF: a tag, branch or commit); the new
+#                                   release must build a test document before it becomes current
+#   texign-update                   the same, as one short command
+#   texign-ctl revert               go back to the release that was current before the last update
+#   texign-ctl status               version, paths, and a check of the toolchain and fonts
+#   texign-ctl remove [--yes]       remove everything this script installed (asks first)
+#   texign-ctl version              print the installed version
+#
+# Layout (XDG; nothing outside your home folder is touched):
+#   ~/.local/share/texign/releases/<version>-<commit>/   one per install or update
+#   ~/.local/share/texign/current  -> releases/<latest>  swapped atomically
+#   ~/.local/share/texign/previous -> releases/<prior>   the revert target
+#   ~/.local/share/texign/source                         where updates come from (repository URL or path)
+#   ~/.local/share/texign/channel                        stable (release tags), main, or dev
+#   TEXMFHOME/tex/latex/texign -> current/tex/latex/texign   so TeX finds the classes (usually ~/texmf)
+#   ~/.local/bin/texign        -> current/tools/texign       the author command
+#   ~/.local/bin/texign-ctl, texign-update                   copies of these scripts, replaced on update
+set -euo pipefail
+
+APP="texign"
+KEEP_RELEASES=3
+DATA_DIR="${TEXIGN_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/texign}"
+BIN_DIR="${TEXIGN_BIN:-$HOME/.local/bin}"
+RELEASES_DIR="$DATA_DIR/releases"
+CURRENT="$DATA_DIR/current"
+PREVIOUS="$DATA_DIR/previous"
+SOURCE_FILE="$DATA_DIR/source"
+CHANNEL_FILE="$DATA_DIR/channel"
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+HERE="$(cd "$(dirname "$SELF")/.." && pwd)"
+
+if [[ -t 1 ]]; then G=$'\e[32m'; Y=$'\e[33m'; R=$'\e[31m'; B=$'\e[1m'; N=$'\e[0m'; else G= Y= R= B= N=; fi
+log()  { printf '%s==>%s %s\n' "$G" "$N" "$*"; }
+warn() { printf '%s==>%s %s\n' "$Y" "$N" "$*"; }
+err()  { printf '%s==>%s %s\n' "$R" "$N" "$*" >&2; }
+die()  { err "$*"; exit 1; }
+
+# root would put everything in /root; containers (CI) set TEXIGN_ALLOW_ROOT=1
+[[ "$(id -u)" -ne 0 || -n "${TEXIGN_ALLOW_ROOT:-}" ]] || die "texign-ctl installs for one user; run it without sudo."
+
+texmf_dest() {
+  local home; home="$(kpsewhich -var-value TEXMFHOME 2>/dev/null || true)"
+  [[ -n "$home" ]] || die "kpsewhich not found: install TeX Live first (see 'texign-ctl status')."
+  printf '%s/tex/latex/texign' "$home"
+}
+
+# Points LINK at TARGET, but only if LINK is absent or already a symlink:
+# a real folder or file there belongs to someone else and is never replaced.
+place_link() {
+  local target="$1" link="$2"
+  if [[ -e "$link" && ! -L "$link" ]]; then
+    die "$link exists and is not a link; move it away first (Texign never replaces it)."
+  fi
+  mkdir -p "$(dirname "$link")"
+  ln -sfn "$target" "$link.tmp.$$" && mv -Tf "$link.tmp.$$" "$link"
+}
+
+# Copies a script into BIN_DIR through a temporary file, so a script that is
+# running right now (this one, during 'update') keeps reading its old copy.
+place_copy() {
+  local src="$1" dest="$2"
+  mkdir -p "$(dirname "$dest")"
+  cp "$src" "$dest.tmp.$$" && chmod 755 "$dest.tmp.$$" && mv -f "$dest.tmp.$$" "$dest"
+}
+
+link_into_place() {
+  local root="$1"
+  place_link "$root/tex/latex/texign" "$(texmf_dest)"
+  place_link "$root/tools/texign" "$BIN_DIR/texign"
+  place_copy "$root/scripts/texign-ctl" "$BIN_DIR/texign-ctl"
+  place_copy "$root/scripts/texign-update" "$BIN_DIR/texign-update"
+}
+
+path_hint() {
+  case ":$PATH:" in
+    *":$BIN_DIR:"*) ;;
+    *) warn "$BIN_DIR is not on your PATH. Add this line to ~/.bashrc (or ~/.zshrc):"
+       printf '      export PATH="%s:$PATH"\n' "$BIN_DIR" ;;
+  esac
+}
+
+# The Git source to clone from: the origin of the clone this script runs
+# from, or that clone itself when it has no remote yet.
+detect_source() {
+  local url
+  url="$(git -C "$HERE" remote get-url origin 2>/dev/null || true)"
+  if [[ -n "$url" ]]; then printf '%s' "$url"
+  elif git -C "$HERE" rev-parse --git-dir >/dev/null 2>&1; then printf 'file://%s' "$HERE"
+  else die "$HERE is not a Git clone; install from 'git clone' of the repository."
+  fi
+}
+
+# The ref to install: --ref wins; the stable channel takes the highest
+# vX.Y.Z tag (falling back to the default branch while there are no tags);
+# the main channel takes the default branch.
+resolve_ref() {
+  local source="$1" channel="$2" ref="$3" tag
+  if [[ -n "$ref" ]]; then printf '%s' "$ref"; return; fi
+  if [[ "$channel" == stable ]]; then
+    tag="$(git ls-remote --tags --refs "$source" 'v*' 2>/dev/null \
+           | sed 's|.*refs/tags/||' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)"
+    if [[ -n "$tag" ]]; then printf '%s' "$tag"; return; fi
+    warn "No release tag yet; using the default branch." >&2
+  fi
+  printf 'HEAD'
+}
+
+# Builds a short test document with the classes of ROOT, through ROOT's own
+# build sequence. A release becomes current only if this passes.
+check_release() {
+  local root="$1" tmp
+  tmp="$(mktemp -d)"
+  cp -r "$root/tests/install/." "$tmp/"
+  if TEXINPUTS="$root/tex/latex/texign//:" "$root/tools/texign-build" "$tmp/check.tex" >"$tmp/build.out" 2>&1 \
+     && [[ -s "$tmp/check.pdf" ]]; then
+    rm -rf "$tmp"; return 0
+  fi
+  err "The new release failed its test build:"
+  sed 's/^/      /' "$tmp/build.out" | tail -12 >&2
+  rm -rf "$tmp"; return 1
+}
+
+# Fetches REF from SOURCE into a new release folder (files only: 'git
+# archive' leaves out what .gitattributes marks export-ignore) and prints
+# the folder's path.
+fetch_release() {
+  local source="$1" ref="$2" tmp version commit dest
+  tmp="$(mktemp -d)"
+  if [[ "$ref" == HEAD ]]; then
+    git clone -q --depth 1 "$source" "$tmp/src" 2>/dev/null || git clone -q "$source" "$tmp/src"
+  else
+    git clone -q --depth 1 --branch "$ref" "$source" "$tmp/src" 2>/dev/null \
+      || { git clone -q "$source" "$tmp/src" && git -C "$tmp/src" checkout -q "$ref"; } \
+      || { rm -rf "$tmp"; die "Could not fetch '$ref' from $source."; }
+  fi
+  version="$(cat "$tmp/src/VERSION" 2>/dev/null || echo 0.0.0)"
+  commit="$(git -C "$tmp/src" rev-parse --short HEAD)"
+  dest="$RELEASES_DIR/$version-$commit"
+  if [[ ! -d "$dest" ]]; then
+    mkdir -p "$dest.partial"
+    git -C "$tmp/src" archive HEAD | tar -x -C "$dest.partial"
+    mv "$dest.partial" "$dest"
+  fi
+  rm -rf "$tmp"
+  printf '%s' "$dest"
+}
+
+prune_releases() {
+  local keep_cur keep_prev
+  keep_cur="$(readlink -f "$CURRENT" 2>/dev/null || true)"
+  keep_prev="$(readlink -f "$PREVIOUS" 2>/dev/null || true)"
+  ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | sed 's|/$||' | tail -n +$((KEEP_RELEASES + 1)) | while read -r old; do
+    [[ "$old" == "$keep_cur" || "$old" == "$keep_prev" ]] && continue
+    rm -rf "$old"
+  done
+}
+
+deploy() {
+  local ref="$1" no_check="$2" source channel new cur
+  source="$(cat "$SOURCE_FILE")"; channel="$(cat "$CHANNEL_FILE")"
+  ref="$(resolve_ref "$source" "$channel" "$ref")"
+  log "Fetching ${B}${ref/HEAD/the default branch}${N} from $source"
+  new="$(fetch_release "$source" "$ref")"
+  cur="$(readlink -f "$CURRENT" 2>/dev/null || true)"
+  if [[ "$new" == "$cur" ]]; then
+    log "Already up to date: $(basename "$cur")."
+    link_into_place "$CURRENT"
+    return 0
+  fi
+  if [[ "$no_check" == 1 ]]; then
+    warn "Skipping the test build (--no-check)."
+  else
+    log "Test build with $(basename "$new")"
+    check_release "$new" || { rm -rf "$new"; die "Nothing changed; $(basename "${cur:-none}") stays current."; }
+  fi
+  [[ -n "$cur" ]] && place_link "$cur" "$PREVIOUS"
+  place_link "$new" "$CURRENT"
+  link_into_place "$CURRENT"
+  prune_releases
+  log "Texign ${B}$(cat "$CURRENT/VERSION")${N} is current ($(basename "$new"))."
+}
+
+cmd_install() {
+  local channel=stable ref="" no_check=0
+  for arg in "$@"; do
+    case "$arg" in
+      --main) channel=main ;;
+      --dev) channel=dev ;;
+      --ref=*) ref="${arg#--ref=}" ;;
+      --no-check) no_check=1 ;;
+      *) die "usage: texign-ctl install [--main | --dev | --ref=REF] [--no-check]" ;;
+    esac
+  done
+  command -v git >/dev/null || die "git is required."
+  mkdir -p "$RELEASES_DIR"
+  if [[ "$channel" == dev ]]; then
+    [[ -f "$HERE/tex/latex/texign/texign-article.cls" ]] || die "--dev must run from a Texign clone."
+    printf 'file://%s' "$HERE" >"$SOURCE_FILE"; echo dev >"$CHANNEL_FILE"
+    place_link "$HERE" "$CURRENT"
+    link_into_place "$CURRENT"
+    log "Linked to the working tree $HERE (development mode; 'git pull' there updates it)."
+  else
+    detect_source >"$SOURCE_FILE"; echo "$channel" >"$CHANNEL_FILE"
+    deploy "$ref" "$no_check"
+  fi
+  log "TeX finds the classes through $(texmf_dest)"
+  log "The author command is $BIN_DIR/texign"
+  path_hint
+  printf '\n    Next: %stexign-ctl status%s checks fonts and tools; %stexign new article eseu%s starts a document.\n' "$B" "$N" "$B" "$N"
+}
+
+cmd_update() {
+  local ref="" no_check=0
+  for arg in "$@"; do
+    case "$arg" in
+      --ref=*) ref="${arg#--ref=}" ;;
+      --ref) die "write --ref=REF" ;;
+      --no-check) no_check=1 ;;
+      *) die "usage: texign-ctl update [--ref=REF] [--no-check]" ;;
+    esac
+  done
+  [[ -f "$CHANNEL_FILE" ]] || die "Texign is not installed yet; run 'scripts/texign-ctl install' from a clone."
+  [[ "$(cat "$CHANNEL_FILE")" != dev ]] || die "Development mode follows the working tree: run 'git pull' in $(readlink -f "$CURRENT")."
+  deploy "$ref" "$no_check"
+}
+
+cmd_revert() {
+  [[ -L "$PREVIOUS" ]] || die "There is no previous release to go back to."
+  local cur prev
+  cur="$(readlink -f "$CURRENT")"; prev="$(readlink -f "$PREVIOUS")"
+  [[ -d "$prev" ]] || die "The previous release ($prev) is gone."
+  place_link "$prev" "$CURRENT"
+  place_link "$cur" "$PREVIOUS"
+  link_into_place "$CURRENT"
+  log "Reverted to $(basename "$prev"); 'texign-ctl revert' again returns to $(basename "$cur")."
+}
+
+check_line() { if "${@:2}" >/dev/null 2>&1; then printf '  %sok%s    %s\n' "$G" "$N" "$1"; else printf '  %sMISS%s  %s\n' "$R" "$N" "$1"; return 1; fi; }
+
+cmd_status() {
+  local ok=0 dest link
+  if [[ -L "$CURRENT" ]]; then
+    printf '%sTexign %s%s  (%s, %s)\n' "$B" "$(cat "$CURRENT/VERSION" 2>/dev/null || echo '?')" "$N" \
+      "$(cat "$CHANNEL_FILE" 2>/dev/null || echo '?')" "$(basename "$(readlink -f "$CURRENT")")"
+    printf '  source    %s\n' "$(cat "$SOURCE_FILE" 2>/dev/null || echo '?')"
+    [[ -L "$PREVIOUS" ]] && printf '  previous  %s (texign-ctl revert)\n' "$(basename "$(readlink -f "$PREVIOUS")")"
+  else
+    printf '%sTexign is not installed%s (run scripts/texign-ctl install from a clone)\n' "$B" "$N"
+  fi
+  echo
+  check_line "kpsewhich (TeX Live)" command -v kpsewhich || ok=1
+  if command -v kpsewhich >/dev/null; then
+    dest="$(texmf_dest)"; link="$(kpsewhich texign-article.cls 2>/dev/null || true)"
+    check_line "TeX finds texign-article.cls${link:+ ($link)}" test -n "$link" || ok=1
+  fi
+  check_line "texign on PATH" command -v texign || ok=1
+  for t in lualatex biber bib2gls upmendex java pdfinfo git; do check_line "$t" command -v "$t" || ok=1; done
+  for f in IBMPlexSerif-Regular.otf IBMPlexSans-Regular.otf IBMPlexSansCondensed-Regular.otf \
+           IBMPlexMono-Regular.otf IBMPlexMath-Regular.otf; do
+    check_line "$f" kpsewhich "$f" || ok=1
+  done
+  if (( ok )); then
+    echo
+    warn "Something is missing. TeX Live with these packages covers it:"
+    echo "      Arch:          sudo pacman -S texlive texlive-langeuropean biber jre-openjdk-headless"
+    echo "      Debian/Ubuntu: sudo apt install texlive-full default-jre-headless poppler-utils"
+    echo "      TeX Live (tlmgr): tlmgr install scheme-medium plex plex-otf biber biblatex glossaries-extra bib2gls upmendex koma-script"
+    return 1
+  fi
+}
+
+cmd_remove() {
+  local yes=0
+  [[ "${1:-}" == --yes ]] && yes=1
+  [[ -d "$DATA_DIR" || -L "$BIN_DIR/texign" ]] || { log "Texign is not installed."; return 0; }
+  if (( ! yes )); then
+    echo "This removes $DATA_DIR (all installed releases), the link in TEXMFHOME and"
+    echo "texign, texign-ctl and texign-update from $BIN_DIR. Your documents are not touched."
+    read -r -p "Type 'remove' to continue: " reply
+    [[ "$reply" == remove ]] || die "Nothing removed."
+  fi
+  local dest; dest="$(kpsewhich -var-value TEXMFHOME 2>/dev/null)/tex/latex/texign"
+  [[ -L "$dest" ]] && rm -f "$dest" && log "Removed $dest"
+  [[ -L "$BIN_DIR/texign" ]] && rm -f "$BIN_DIR/texign"
+  rm -f "$BIN_DIR/texign-update"
+  rm -rf "$DATA_DIR"
+  log "Removed $DATA_DIR and the commands in $BIN_DIR."
+  # last, because this very file may be the copy being removed
+  rm -f "$BIN_DIR/texign-ctl"
+}
+
+case "${1:-}" in
+  install) shift; cmd_install "$@" ;;
+  update)  shift; cmd_update "$@" ;;
+  revert)  cmd_revert ;;
+  status)  cmd_status ;;
+  remove)  shift; cmd_remove "$@" ;;
+  version) cat "$CURRENT/VERSION" 2>/dev/null || die "Texign is not installed." ;;
+  -h|--help|help) sed -n '2,26p' "$SELF" | sed 's/^# \{0,1\}//' ;;
+  *) echo "usage: texign-ctl {install [--main|--dev|--ref=REF] [--no-check] | update [--ref=REF] [--no-check] | revert | status | remove [--yes] | version}" >&2; exit 2 ;;
+esac

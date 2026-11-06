@@ -13,3 +13,5 @@
 # example and test output
 examples/**/*.pdf
 .texign/
+# release files
+dist/

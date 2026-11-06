@@ -282,10 +282,14 @@
 
 % ---- images ------------------------------------------------------------------
 % a missing file becomes a labelled placeholder, so drafts always compile
+% images never exceed a maximum height (tall pictures would otherwise fill
+% the page); explicit body/wide images may be taller
+\dim_new:N \l__texign_img_maxh_dim
+\dim_set:Nn \l__texign_img_maxh_dim { 0.28\textheight }
 \cs_new_protected:Npn \__texign_graphic:n #1
   {
     \IfFileExists {#1}
-      { \includegraphics [ width = \linewidth ] {#1} }
+      { \includegraphics [ width = \linewidth , height = \l__texign_img_maxh_dim , keepaspectratio ] {#1} }
       {
         \fcolorbox{rule}{rule!35}
           {
@@ -322,9 +326,19 @@
       }
   }
 \cs_new_protected:Npn \__texign_img_body:nn #1#2
-  { \begin{figure}[htbp] \__texign_graphic:n {#1} \caption{#2} \end{figure} }
+  {
+    \begin{figure}[htbp]
+      \dim_set:Nn \l__texign_img_maxh_dim { 0.45\textheight }
+      \centering \__texign_graphic:n {#1} \caption{#2}
+    \end{figure}
+  }
 \cs_new_protected:Npn \__texign_img_wide:nn #1#2
-  { \begin{figure}[htbp] \texignwide { \__texign_graphic:n {#1} \caption{#2} } \end{figure} }
+  {
+    \begin{figure}[htbp]
+      \dim_set:Nn \l__texign_img_maxh_dim { 0.45\textheight }
+      \texignwide { \centering \__texign_graphic:n {#1} \caption{#2} }
+    \end{figure}
+  }
 % consecutive \image calls (spaces and blank lines between them allowed)
 % are collected and set as one row; anything else closes the row
 \cs_new_protected:Npn \__texign_imgq_peek:
@@ -362,10 +376,17 @@
       }
   }
 % a lone image keeps a modest size: half the text width, caption beside it
+% a lone image keeps a modest size (at most half the text width, height
+% capped); the caption takes the rest of the line, aligned with its foot
+\box_new:N \l__texign_img_box
 \cs_new_protected:Npn \__texign_img_single:nn #1#2
   {
-    \begin{minipage}[b]{0.5\linewidth} \__texign_graphic:n {#1} \end{minipage} \hfill
-    \begin{minipage}[b]{0.46\linewidth} \caption{#2} \end{minipage}
+    \hbox_set:Nn \l__texign_img_box
+      { \linewidth = 0.5\linewidth \__texign_graphic:n {#1} }
+    \noindent \box_use:N \l__texign_img_box \hspace{1.2em}
+    \begin{minipage}[b]{ \dim_eval:n { \linewidth - \box_wd:N \l__texign_img_box - 1.2em } }
+      \caption{#2}
+    \end{minipage}
   }
 \cs_new_protected:Npn \__texign_img_cell:nnn #1#2#3
   { \begin{minipage}[t]{#1} \__texign_graphic:n {#2} \caption{#3} \end{minipage} }

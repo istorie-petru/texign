@@ -87,6 +87,21 @@
   }
 
 % ---- appearance shared by every convention ----------------------------------
+% URLs: quiet — text face, muted colour, no "https://", breakable anywhere;
+% the link still points to the full address
+\RequirePackage{xurl}
+\urlstyle{same}
+\AtBeginDocument { \hypersetup { urlcolor = muted } }
+\tl_new:N \l__texign_url_tl
+\cs_new_protected:Npn \texign_url:n #1
+  {
+    \tl_set:Nn \l__texign_url_tl {#1}
+    \regex_replace_once:nnN { \A https?:// } { } \l__texign_url_tl
+    \regex_replace_once:nnN { / \Z } { } \l__texign_url_tl
+    \exp_args:NnV \href {#1} \l__texign_url_tl
+  }
+\cs_new_eq:NN \texignurl \texign_url:n
+\DeclareFieldFormat { url } { \texignurl {#1} }
 \setlength \bibhang { 1.4em }
 \setlength \bibitemsep { 3pt }
 \renewcommand* \bibfont { \small }

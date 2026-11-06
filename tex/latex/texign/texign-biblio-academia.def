@@ -77,7 +77,7 @@
     {\bibstring{in}\space}}
 
 % online sources: "www.warmuseum.ca, 3 noiembrie 2004."
-\DeclareFieldFormat{url}{\url{#1}}
+\DeclareFieldFormat{url}{\texignurl{#1}}
 \DeclareFieldFormat{urldate}{#1}
 \renewbibmacro*{url+urldate}{%
   \printfield{url}%

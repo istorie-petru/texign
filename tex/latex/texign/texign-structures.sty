@@ -121,9 +121,14 @@
     \par \addvspace { 8pt }
     \IfValueT {#1} { \captionof { table } {#1} }
     \int_set:Nn \l__texign_cmp_cols_int { \IfValueTF {#5} { 3 } { 2 } }
-    \dim_set:Nn \l_tmpa_dim { 30mm }
+    % columns fill the line exactly (no stretched gaps, so the row colours
+    % are continuous): criteria column + n equal columns + their padding
+    \dim_set:Nn \l_tmpa_dim { 28mm }
     \dim_set:Nn \l_tmpb_dim
-      { ( \linewidth - \l_tmpa_dim - 2em * \l__texign_cmp_cols_int ) / \l__texign_cmp_cols_int }
+      {
+        ( \linewidth - \l_tmpa_dim - 2\tabcolsep * ( \l__texign_cmp_cols_int + 1 ) )
+        / \l__texign_cmp_cols_int
+      }
     \cs_set_protected:Npn \compare ##1##2##3
       { \peek_meaning:NTF [ { \__texign_cmp_row:nnnw {##1} {##2} {##3} } { ##1 & ##2 & ##3 \\ } }
     \cs_set_protected:Npn \__texign_cmp_row:nnnw ##1##2##3 [##4] { ##1 & ##2 & ##3 & ##4 \\ }
@@ -138,6 +143,6 @@
       }
     \headerrow \head {#2} & \head {#3} & \head {#4} \IfValueT {#5} { & \head {#5} } \\
   }
-  { \end{tabular*} \par \addvspace { 8pt } }
+  { \end{tabular} \par \addvspace { 8pt } }
 \cs_new_protected:Npn \__texign_cmp_begin:n #1
-  { \begin{tabular*} { \linewidth } { @{ \extracolsep { \fill } } #1 @{} } }
+  { \begin{tabular} { #1 } }

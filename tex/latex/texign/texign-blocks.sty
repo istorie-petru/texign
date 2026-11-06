@@ -33,15 +33,43 @@
     }
     \enspace \ignorespaces
   }
+% footnotes written inside a box go to the foot of the page, not into the box:
+% inside, \footnote sets the mark and typesets the text into a box at once
+% (citations and counters as in the text); the texts follow the box
+\seq_new:N \g__texign_box_notes_seq
+\int_new:N \g__texign_box_note_int
+\cs_new_protected:Npn \__texign_box_notes_start:
+  {
+    \seq_gclear:N \g__texign_box_notes_seq
+    \RenewDocumentCommand \footnote { o +m }
+      {
+        \footnotemark
+        \int_gincr:N \g__texign_box_note_int
+        \box_if_exist:cF { g__texign_bn_ \int_use:N \g__texign_box_note_int _box }
+          { \box_new:c { g__texign_bn_ \int_use:N \g__texign_box_note_int _box } }
+        \vbox_gset_top:cn { g__texign_bn_ \int_use:N \g__texign_box_note_int _box }
+          {
+            \hsize = \dim_eval:n { \textwidth - 1.2em } \linewidth = \hsize
+            \usekomafont { footnote } \noindent ##2 \par
+          }
+        \seq_gput_right:Ne \g__texign_box_notes_seq
+          { { \int_use:N \c@footnote } { \int_use:N \g__texign_box_note_int } }
+      }
+  }
+\cs_new_protected:Npn \__texign_box_notes_flush:
+  { \seq_map_inline:Nn \g__texign_box_notes_seq { \__texign_box_note:nn ##1 } }
+\cs_new_protected:Npn \__texign_box_note:nn #1#2
+  { \footnotetext [ #1 ] { \box_use_drop:c { g__texign_bn_ #2 _box } } }
 \cs_new_protected:Npn \__texign_new_box:nn #1#2
   % #1 environment and string key, #2 colour
   {
     \NewDocumentEnvironment {#1} { O{} }
       {
         \begin{tcolorbox}[ texign/box = #2 ]
+        \__texign_box_notes_start:
         \noindent \__texign_box_label:nnn {#2} {#1} {##1}
       }
-      { \end{tcolorbox} }
+      { \end{tcolorbox} \__texign_box_notes_flush: }
   }
 \__texign_new_box:nn { definition }   { accent }
 \__texign_new_box:nn { concept }      { accent }
@@ -55,10 +83,11 @@
 \NewDocumentEnvironment { source } { m }
   {
     \begin{tcolorbox}[ texign/box = source , top = 6pt , bottom = 6pt ]
+    \__texign_box_notes_start:
     \noindent { \sffamily \bfseries \color{source} \texign_string:n { source } \nobreakspace·\nobreakspace #1 } \par
     \smallskip \itshape \noindent \ignorespaces
   }
-  { \end{tcolorbox} }
+  { \end{tcolorbox} \__texign_box_notes_flush: }
 
 % ---- quotations ----------------------------------------------------------
 % the attribution sits in the margin, level with the quotation's first line

@@ -60,7 +60,9 @@
         citetracker = context , ibidtracker = constrict , idemtracker = constrict ,
         opcittracker = context , dashed = false , maxbibnames = 99 ,
         mincitenames = 1 , maxcitenames = 3 , singletitle = true ,
-        citepages = omit , dateabbrev = false , urldate = long }
+        citepages = omit , dateabbrev = false , urldate = long ,
+        % books: a chapter starts again with a full citation (no Ibidem across chapters)
+        \cs_if_exist:NT \chapter { citereset = chapter } }
   }
 
 % citations that become notes go through \note, so they follow the note

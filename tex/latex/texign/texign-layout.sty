@@ -41,7 +41,7 @@
     \makebox [ \linewidth ] [ l ]
       {
         \bool_lazy_and:nnT { \texign_if_margin_p: } { \legacy_if_p:n { @twoside } }
-          { \ifthispageodd { } { \hspace* { \dim_eval:n { - \marginparsep - \marginparwidth } } } }
+          { \Ifthispageodd { } { \hspace* { \dim_eval:n { - \marginparsep - \marginparwidth } } } }
         \begin{minipage} [ t ] { \texignfullwidth } #1 \end{minipage}
       }
   }

@@ -68,6 +68,8 @@
     figure = Figura , table = Tabelul , chapter = Capitolul ,
     bibliography = Bibliografie , primary = Surse~primare ,
     secondary = Literatură~secundară ,
+    glossary = Glosar , abbreviations = Abrevieri , chronology = Cronologie ,
+    contents = Cuprins , listfigures = Lista~figurilor , listtables = Lista~tabelelor ,
   }
 \prop_gset_from_keyval:Nn \g__texign_strings_en_prop
   {
@@ -77,6 +79,8 @@
     figure = Figure , table = Table , chapter = Chapter ,
     bibliography = Bibliography , primary = Primary~sources ,
     secondary = Secondary~literature ,
+    glossary = Glossary , abbreviations = Abbreviations , chronology = Chronology ,
+    contents = Contents , listfigures = List~of~Figures , listtables = List~of~Tables ,
   }
 \cs_new:Npn \texign_string:n #1
   { \prop_item:cn { g__texign_strings_ \g_texign_lang_tl _prop } {#1} }

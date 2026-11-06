@@ -77,6 +77,41 @@
 \cs_if_exist:NT \chapter { \renewcommand* \chaptermarkformat { } }
 \pagestyle { scrheadings }
 
+% ---- contents, list of figures, list of tables --------------------------------
+% \tableofcontents, \listoffigures, \listoftables. One look for all three:
+% sans numbers in accent, titles in the text face, page numbers in muted
+% sans flush right, no leader dots; section entries in sans semibold.
+\AtBeginDocument
+  {
+    \renewcommand \contentsname { \texign_string:n { contents } }
+    \renewcommand \listfigurename { \texign_string:n { listfigures } }
+    \renewcommand \listtablename { \texign_string:n { listtables } }
+  }
+\cs_new_protected:Npn \__texign_toc_number:n #1 { \textcolor{accent}{ \sffamily #1 } }
+\cs_new_protected:Npn \__texign_toc_page:n #1 { \textcolor{muted}{ \sffamily \small #1 } }
+\DeclareTOCStyleEntries
+  [
+    dynnumwidth , linefill = \hfill , pagenumberformat = \__texign_toc_page:n ,
+    entrynumberformat = \__texign_toc_number:n , beforeskip = 1pt plus 1pt ,
+    entryformat = \color{ink} ,
+  ]
+  { tocline } { subsection , subsubsection , figure , table }
+\cs_if_exist:NT \chapter
+  {
+    \DeclareTOCStyleEntry
+      [ dynnumwidth , linefill = \hfill , pagenumberformat = \__texign_toc_page:n ,
+        entrynumberformat = \__texign_toc_number:n , beforeskip = 8pt plus 1pt ,
+        entryformat = \sffamily \bfseries \color{ink} ]
+      { tocline } { chapter }
+  }
+\DeclareTOCStyleEntry
+  [ dynnumwidth , linefill = \hfill , pagenumberformat = \__texign_toc_page:n ,
+    entrynumberformat = \__texign_toc_number:n , beforeskip = 5pt plus 1pt ,
+    entryformat = \sffamily \bfseries \color{ink} , level = 1 , indent = 0pt ]
+  { tocline } { section }
+\KOMAoptions { listof = flat }
+\setcounter { tocdepth } { 2 }
+
 % ---- footnotes (notes=foot) ------------------------------------------------------
 \setkomafont { footnote } { \sffamily \footnotesize \color{muted} }
 \deffootnote { 1.2em } { 0pt } { \textsf { \color{accent} \thefootnotemark } \enspace }

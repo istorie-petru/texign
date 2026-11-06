@@ -4,7 +4,8 @@
 #   1. LuaLaTeX, first pass   reads the document, writes citations, labels
 #                             and margin positions to the auxiliary files
 #   2. Biber                  only when the document has a bibliography
-#   3. LuaLaTeX, more passes  until labels, citations and margin positions
+#   3. bib2gls                only when the document has a glossary
+#   4. LuaLaTeX, more passes  until labels, citations and margin positions
 #                             stop changing (at most 4 more passes)
 #
 # Auxiliary files live in .texign/ next to the source; the PDF is placed
@@ -36,7 +37,7 @@ show_error() {
   grep -m1 -E '^[^ ]+:[0-9]+: |^! ' -A6 "$log" | sed 's/^/    /'
   echo "    full log: $(pwd)/$log"
 }
-state() { cat "$aux/$name.aux" "$aux/$name.bbl" "$aux/$name.out" 2>/dev/null | md5sum | cut -d' ' -f1; }
+state() { cat "$aux/$name.aux" "$aux/$name.bbl" "$aux/$name.out" "$aux"/*.glstex 2>/dev/null | md5sum | cut -d' ' -f1; }
 
 echo "${b}texign build${n} $name.tex"
 t0=$(date +%s.%N)
@@ -56,12 +57,21 @@ else
   say "2. Biber — bibliography"; printf 'not needed\n'
 fi
 
+if grep -q 'glsxtr@resource' "$aux/$name.aux" 2>/dev/null; then
+  say "3. bib2gls — glossary and abbreviations"
+  if bib2gls --quiet --dir "$aux" "$name" >"$aux/bib2gls.out" 2>&1; then
+    ok "($(cat "$aux"/*.glstex 2>/dev/null | grep -c 'bibglsnew') entries)"
+  else
+    fail; echo; grep -iE 'error' "$aux/$name.glg" "$aux/bib2gls.out" 2>/dev/null | head -5 | sed 's/^/    /'; exit 1
+  fi
+fi
+
 prev=""; pass=2
 while (( pass <= 5 )); do
   cur=$(state)
   [[ "$cur" == "$prev" ]] && break
   prev="$cur"
-  say "3. LuaLaTeX — pass $pass (references, margin)"
+  say "4. LuaLaTeX — pass $pass (references, margin)"
   if lualatex_pass; then ok; else fail; show_error; exit 1; fi
   # stop as soon as nothing that feeds the next pass has changed
   [[ "$(state)" == "$cur" ]] && break

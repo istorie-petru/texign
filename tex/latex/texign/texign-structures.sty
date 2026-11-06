@@ -1,0 +1,131 @@
+% texign-structures.sty — structured information: timelines and comparisons.
+%
+% Author interface
+%   \begin{timeline}[title]
+%     \event{1864}{Legea instrucțiunii publice}{Învățământ primar obligatoriu.}
+%     \event{1866–1914}{Domnia lui Carol I}{}          a period: a date range
+%   \end{timeline}
+%   \begin{comparison}[caption]{Criteriu}{Legea din 1864}{Legea din 1896}[third]
+%     \compare{Obligativitate}{8–12 ani}{7–14 ani}[third]
+%   \end{comparison}
+\NeedsTeXFormat{LaTeX2e}[2023-11-01]
+\ProvidesExplPackage{texign-structures}{2026/11/06}{0.1.0}{Texign timelines and comparisons}
+\RequirePackage{texign-core}
+\RequirePackage{texign-blocks}
+\RequirePackage{tikz}
+
+% ---- timeline ---------------------------------------------------------------
+% Dates in an accent sans column, a dot per event joined by a hairline,
+% title and description beside it. Events never split; the timeline may
+% break between events (the line then stops at the page end).
+\dim_new:N \l__texign_tl_date_dim
+\dim_new:N \l__texign_tl_gap_dim
+\dim_new:N \l__texign_tl_skip_dim
+\dim_set:Nn \l__texign_tl_date_dim { 21mm }
+\dim_set:Nn \l__texign_tl_gap_dim { 3.5mm }
+\dim_set:Nn \l__texign_tl_skip_dim { 7pt }
+\dim_new:N \l__texign_tl_strut_dim
+\dim_set:Nn \l__texign_tl_strut_dim { 9pt }
+\seq_new:N \l__texign_tl_events_seq
+\box_new:N \l__texign_tl_box
+\int_new:N \l__texign_tl_count_int
+\int_new:N \g__texign_tl_int
+\tl_new:N \l__texign_tl_id_tl
+\tl_new:N \l__texign_tl_prev_tl
+\cs_generate_variant:Nn \property_ref:nnn { V }
+
+\NewDocumentEnvironment { timeline } { o }
+  {
+    \seq_clear:N \l__texign_tl_events_seq
+    \int_gincr:N \g__texign_tl_int
+    \cs_set_protected:Npn \event ##1##2##3
+      { \seq_put_right:Nn \l__texign_tl_events_seq { {##1} {##2} {##3} } }
+    \par \addvspace { 8pt }
+    \IfValueT {#1}
+      {
+        \noindent
+        { \sffamily \footnotesize \bfseries \color{accent} \addfontfeatures { LetterSpace = 6 }
+          \text_uppercase:n { \texign_string:n { chronology } } }
+        \tl_if_blank:nF {#1} { { \sffamily \footnotesize \color{muted} \nobreakspace·\nobreakspace #1 } }
+        \par \nopagebreak \vspace { 6pt }
+      }
+  }
+  {
+    \int_set:Nn \l__texign_tl_count_int { \seq_count:N \l__texign_tl_events_seq }
+    \seq_map_indexed_inline:Nn \l__texign_tl_events_seq { \__texign_tl_event:nnnn {##1} ##2 }
+    \par \addvspace { 8pt }
+  }
+\cs_new_protected:Npn \__texign_tl_event:nnnn #1#2#3#4
+  % #1 index, #2 date, #3 title, #4 description
+  {
+    \dim_set:Nn \l_tmpa_dim { \linewidth - \l__texign_tl_date_dim - 2 \l__texign_tl_gap_dim }
+    \vbox_set_top:Nn \l__texign_tl_box
+      {
+        \hsize = \l_tmpa_dim \linewidth = \hsize \raggedright
+        \noindent { \sffamily \bfseries \small #3 } \par
+        \tl_if_blank:nF {#4} { \vspace { 1pt } \noindent { \small #4 } \par }
+      }
+    \par \noindent
+    \makebox [ \l__texign_tl_date_dim ] [ r ]
+      { \sffamily \small \bfseries \color{accent} #2 }
+    \hspace { \l__texign_tl_gap_dim }
+    % a dot per event; the line joins it to the previous dot (positions from
+    % the previous run via remember picture); omitted across a page break
+    \tl_set:Ne \l__texign_tl_id_tl { texign-tl-\int_use:N \g__texign_tl_int - #1 }
+    \tl_set:Ne \l__texign_tl_prev_tl { texign-tl-\int_use:N \g__texign_tl_int - \int_eval:n { #1 - 1 } }
+    \property_record:Vn \l__texign_tl_id_tl { abspage }
+    \hbox_overlap_right:n
+      {
+        \bool_lazy_and:nnT
+          { \int_compare_p:nNn {#1} > { 1 } }
+          {
+            \int_compare_p:nNn
+              { \property_ref:Vnn \l__texign_tl_prev_tl { abspage } { 0 } }
+              = { \property_ref:Vnn \l__texign_tl_id_tl { abspage } { -1 } }
+          }
+          {
+            \tikz [ remember~picture , overlay ]
+              \draw [ rule , line~width = 0.6pt ] ( \l__texign_tl_prev_tl ) -- ( 0pt , 0.35em ) ;
+          }
+        \kern -2pt
+        \tikz [ remember~picture , baseline = -0.35em ]
+          {
+            \fill [ accent ] (2pt,0) circle ( 2pt ) ;
+            \coordinate ( \l__texign_tl_id_tl ) at (2pt,0) ;
+          }
+      }
+    \hspace { \l__texign_tl_gap_dim }
+    \box_use:N \l__texign_tl_box
+    \par
+    \int_compare:nNnT {#1} < { \l__texign_tl_count_int } { \vspace { \l__texign_tl_skip_dim } }
+  }
+
+% ---- comparison (T2) -----------------------------------------------------------
+% A criteria column and two or three compared columns, in the structured
+% table style. With [caption] it is numbered like a table.
+\int_new:N \l__texign_cmp_cols_int
+\NewDocumentEnvironment { comparison } { o m m m o }
+  {
+    \par \addvspace { 8pt }
+    \IfValueT {#1} { \captionof { table } {#1} }
+    \int_set:Nn \l__texign_cmp_cols_int { \IfValueTF {#5} { 3 } { 2 } }
+    \dim_set:Nn \l_tmpa_dim { 30mm }
+    \dim_set:Nn \l_tmpb_dim
+      { ( \linewidth - \l_tmpa_dim - 2em * \l__texign_cmp_cols_int ) / \l__texign_cmp_cols_int }
+    \cs_set_protected:Npn \compare ##1##2##3
+      { \peek_meaning:NTF [ { \__texign_cmp_row:nnnw {##1} {##2} {##3} } { ##1 & ##2 & ##3 \\ } }
+    \cs_set_protected:Npn \__texign_cmp_row:nnnw ##1##2##3 [##4] { ##1 & ##2 & ##3 & ##4 \\ }
+    \small \structuredtable
+    \noindent
+    \exp_args:Ne \__texign_cmp_begin:n
+      {
+        >{ \exp_not:N \leavevmode \exp_not:N \sffamily \exp_not:N \bfseries \exp_not:N \color{muted} \exp_not:N \raggedright \exp_not:N \arraybackslash }
+          p { \dim_use:N \l_tmpa_dim }
+        \prg_replicate:nn { \l__texign_cmp_cols_int }
+          { >{ \exp_not:N \leavevmode \exp_not:N \raggedright \exp_not:N \arraybackslash } p { \dim_use:N \l_tmpb_dim } }
+      }
+    \headerrow \head {#2} & \head {#3} & \head {#4} \IfValueT {#5} { & \head {#5} } \\
+  }
+  { \end{tabular*} \par \addvspace { 8pt } }
+\cs_new_protected:Npn \__texign_cmp_begin:n #1
+  { \begin{tabular*} { \linewidth } { @{ \extracolsep { \fill } } #1 @{} } }

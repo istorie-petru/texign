@@ -13,7 +13,9 @@ consistent across all document types.
 - `texign-notes.sty`: \note, \image, imagegrid, margin stack (two runs; zref-savepos).
 - `texign-blocks.sty`: K1 boxes, source, quotation, captions, T1/T2 tables.
 - `texign-biblio.sty`: biblatex profiles (academia default, chicago, chicago-authordate, authordate, numeric); academia details in `texign-biblio-academia.def`; note citations go through \note.
-- `tools/texign-build`: the build sequence (lualatex → biber → lualatex until stable); `tools/texign` wraps it.
+- `texign-glossary.sty`: glossaries-extra + bib2gls (record mode); custom Romanian sort rule (Java's "ro" puts ș among s); terms and abbreviations from one .bib.
+- `texign-structures.sty`: timeline (TikZ remember picture: needs two passes) and comparison (T2 tabular).
+- `tools/texign-build`: the build sequence (lualatex → biber → bib2gls → lualatex until stable); `tools/texign` wraps it.
 - Internal code is expl3 with prefix `texign`; author commands are short and unprefixed.
 
 ## Rules
@@ -29,4 +31,5 @@ consistent across all document types.
 - Libertinus Mono lacks ș/ț; Plex has no small caps (use \acronym).
 - Booktabs rule macros must stay plain expandable macros (\noalign).
 - Margin items and endnotes are typeset into boxes when called (citations, counters) and only placed at shipout.
+- Tests: `tests/academia` (citation norms) and `tests/glossary` (Romanian order) compare text output with expected files.
 - Harmless biblatex warning "Language 'nil' not supported" at \begin{document}; not yet traced.

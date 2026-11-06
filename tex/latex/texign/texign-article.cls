@@ -10,5 +10,7 @@
 \RequirePackage{texign-notes}
 \RequirePackage{texign-blocks}
 \RequirePackage{texign-biblio}
+\RequirePackage{texign-structures}
 \RequirePackage{hyperref}
-\hypersetup{ hidelinks , colorlinks = true , allcolors = accent , pdfcreator = Texign }
+\hypersetup{ hidelinks , colorlinks = true , allcolors = accent , linktoc = page , pdfcreator = Texign }
+\RequirePackage{texign-glossary}

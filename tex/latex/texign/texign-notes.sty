@@ -283,6 +283,7 @@
         \texign_if_margin:TF
           {
             \refstepcounter{figure}
+            \addcontentsline { lof } { figure } { \protect \numberline { \thefigure } #3 }
             \tl_set:Ne \l_tmpa_tl { \thefigure }
             \__texign_flow:en { texign-f-\l_tmpa_tl }
               {

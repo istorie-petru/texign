@@ -1,0 +1,90 @@
+% texign-glossary.sty — glossary of terms and list of abbreviations
+% (glossaries-extra, sorted by bib2gls; the build runs bib2gls itself).
+%
+% Author interface
+%   \addterms{termeni.bib}      preamble; entries in .bib syntax:
+%       @entry{sursa, name={sursă primară}, description={...}}
+%       @abbreviation{onu, short={ONU}, long={Organizația Națiunilor Unite}}
+%   \term{key}  \Term{key}  \terms{key} (plural)   a glossary term
+%   \abbr{key}  \Abbr{key}                          an abbreviation: the first
+%                                                   use is "long (SHORT)"
+%   \printterms   \printabbreviations               print only what was used
+% Only the terms actually used appear, sorted by Romanian (or English) rules.
+\NeedsTeXFormat{LaTeX2e}[2023-11-01]
+\ProvidesExplPackage{texign-glossary}{2026/11/06}{0.1.0}{Texign glossary}
+\RequirePackage{texign-core}
+\RequirePackage[record,abbreviations,nopostdot=false,stylemods,nolangwarn]{glossaries-extra}
+\RequirePackage{glossaries-extra-bib2gls}
+
+% Romanian order: a < ă < â, i < î, s < ș, t < ț (both comma-below and the
+% old cedilla forms). Java's own "ro" collation puts ș among the s words.
+\tl_const:Nn \c__texign_sort_ro_tl
+  {
+    \glsxtrcontrolrules ; \glsxtrspacerules ; \glsxtrnonprintablerules ;
+    \glsxtrcombiningdiacriticrules , \glsxtrhyphenrules < \glsxtrgeneralpuncrules
+    < \glsxtrdigitrules < \glsxtrfractionrules
+    < a,A < ă,Ă < â,Â < b,B < c,C < d,D < e,E < f,F < g,G < h,H < i,I < î,Î
+    < j,J < k,K < l,L < m,M < n,N < o,O < p,P < q,Q < r,R < s,S < ș,Ș,ş,Ş
+    < t,T < ț,Ț,ţ,Ţ < u,U < v,V < w,W < x,X < y,Y < z,Z
+  }
+\NewDocumentCommand \addterms { m }
+  {
+    \str_if_eq:VnTF \g_texign_lang_tl { en }
+      { \tl_set:Nn \l_tmpa_tl { sort = en-GB } }
+      { \tl_set:Ne \l_tmpa_tl { sort = custom , sort-rule = { \exp_not:V \c__texign_sort_ro_tl } } }
+    \exp_last_unbraced:Ne \GlsXtrLoadResources
+      { [ src = {#1} , type = main , match = { entrytype = entry } , \exp_not:V \l_tmpa_tl ] }
+    \exp_last_unbraced:Ne \GlsXtrLoadResources
+      { [ src = {#1} , type = abbreviations , match = { entrytype = abbreviation } , \exp_not:V \l_tmpa_tl ] }
+  }
+\cs_generate_variant:Nn \tl_set:Nn { Ne }
+
+% ---- in the text: ink, no link colour; abbreviations in tracked capitals --
+\renewcommand* \glstextformat [1] { \textcolor{ink}{#1} }
+\setabbreviationstyle { long-short }
+\renewcommand* \glsabbrvdefaultfont [1] { { \addfontfeatures { LetterSpace = 5 } #1 } }
+\NewDocumentCommand \term  { m } { \gls {#1} }
+\NewDocumentCommand \Term  { m } { \Gls {#1} }
+\NewDocumentCommand \terms { m } { \glspl {#1} }
+\NewDocumentCommand \abbr  { m } { \gls {#1} }
+\NewDocumentCommand \Abbr  { m } { \Gls {#1} }
+
+% ---- the printed lists --------------------------------------------------------
+% glossary: term in sans semibold, description, pages in muted sans
+\newglossarystyle { texign }
+  {
+    \renewenvironment { theglossary }
+      { \begin{list}{}{ \leftmargin = 1.4em \itemindent = -\leftmargin \itemsep = 3pt \parsep = 0pt } \small }
+      { \end{list} }
+    \renewcommand* \glossaryheader { }
+    \renewcommand* \glsgroupheading [1] { }
+    \renewcommand* \glsgroupskip { }
+    \renewcommand* \glossentry [2]
+      {
+        \item \glstarget {##1} { \textsf { \textbf { \glossentryname {##1} } } }
+        \enspace \glossentrydesc {##1} \glspostdescription
+        \space { \sffamily \footnotesize \color{muted} ##2 }
+      }
+    \renewcommand* \subglossentry [3] { \glossentry {##2} {##3} }
+  }
+% abbreviations: short form in a fixed column, then the long form
+\newglossarystyle { texign-abbr }
+  {
+    \setglossarystyle { texign }
+    \renewcommand* \glossentry [2]
+      {
+        \item \makebox [ 5em ] [ l ] { \sffamily \bfseries \glstarget {##1} { \glossentryname {##1} } }
+        \glsentrylong {##1} \space { \sffamily \footnotesize \color{muted} ##2 }
+      }
+  }
+\renewcommand* \glossarysection [2] [ ] { \section* {#2} }
+\NewDocumentCommand \printterms { }
+  {
+    \glsxtrifemptyglossary { main } { }
+      { \printunsrtglossary [ type = main , style = texign , title = \texign_string:n { glossary } ] }
+  }
+\RenewDocumentCommand \printabbreviations { }
+  {
+    \glsxtrifemptyglossary { abbreviations } { }
+      { \printunsrtglossary [ type = abbreviations , style = texign-abbr , title = \texign_string:n { abbreviations } ] }
+  }

@@ -34,4 +34,13 @@ if "$ROOT/tools/texign-build" "$dir/norme.tex" >"$dir/build.out" 2>&1 \
 else
   echo "FAIL  academia-norms"; sed 's/^/      /' "$dir/diff.out" "$dir/build.out" | tail -12; fail=1
 fi
+# Romanian alphabetical order in the glossary
+dir="$out/glossary"; cp -r "$ROOT/tests/glossary" "$dir"
+if "$ROOT/tools/texign-build" "$dir/sortare.tex" >"$dir/build.out" 2>&1 \
+   && diff <(pdftotext -raw "$dir/sortare.pdf" - | sed -n '/^Glosar/,$p' | grep -v '^$' | sed '/^[0-9]*$/d') \
+           "$ROOT/tests/glossary/expected.txt" >"$dir/diff.out"; then
+  echo "ok    glossary-order"
+else
+  echo "FAIL  glossary-order"; sed 's/^/      /' "$dir/diff.out" "$dir/build.out" | tail -12; fail=1
+fi
 exit $fail

@@ -150,6 +150,31 @@ Biber (only if needed) → LuaLaTeX until the auxiliary files are stable
 (max. 5 passes), prints each step, and stops at the first error with file
 and line. Auxiliary files in `.texign/`, PDF next to the source.
 
+### 2026-11-06 · Glossary, lists, chronology, comparison (István asked for these)
+
+- **Glossary** ("care se face corect"): glossaries-extra in record mode with
+  bib2gls, so only used terms appear, with page references, sorted by
+  **Romanian alphabetical rules** (a < ă < â, i < î, s < ș, t < ț; comma and
+  cedilla forms both handled; Java's built-in Romanian collation gets ș
+  wrong, so Texign supplies its own rule). Terms and abbreviations live in
+  one .bib file. In the text terms look like ordinary text (no link
+  colour); in the list the term is sans semibold, then the description,
+  then page numbers. Abbreviations: first use "long (SHORT)", short forms
+  in lightly tracked capitals; list "Abrevieri" with a short-form column.
+  Plurals must be given (`plural = {...}`): Romanian plurals are not "+s".
+- **Contents, list of figures, list of tables**: one style — accent sans
+  numbers, titles in ink (only page numbers are links), page numbers flush
+  right, no leader dots; section entries in sans semibold. Images placed in
+  the margin are listed too. Titles: Cuprins, Lista figurilor, Lista
+  tabelelor.
+- **Timeline** (`timeline`, `\event`): accent sans dates in a right-aligned
+  column, an accent dot per event joined by a grey hairline, title in sans
+  semibold, description in the text face. Breaks only between events.
+  Optional title shown as "CRONOLOGIE · title".
+- **Comparison** (`comparison`, `\compare`): the T2 structured table with a
+  criteria column and 2–3 compared columns; optional caption numbers it as
+  a table.
+
 ## Known constraints
 
 - 2026-11-05 · The LaTeX kernel `ypos` property records 0 under LuaLaTeX

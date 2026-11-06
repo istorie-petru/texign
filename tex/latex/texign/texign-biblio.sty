@@ -72,7 +72,7 @@
 \AtBeginDocument
   {
     \bool_if:NTF \g__texign_cite_notes_bool
-      { \cs_set_eq:NN \cite \autocite }
+      { \cs_set_eq:NN \cite \autocite \cs_set_eq:NN \cites \autocites }
       { \DeclareDocumentCommand \cite { } { \leavevmode \unskip \space \autocite } }
   }
 
@@ -95,12 +95,34 @@
 % ---- the Romanian academic convention (citations=academia) ------------------
 \str_if_eq:VnT \g_texign_citations_tl { academia } { \file_input:n { texign-biblio-academia.def } }
 
+% ---- \shortref: a compact reference for tables and timelines ---------------
+% "Schnapp 1996, p. 13-17" (family name, year, page), never a note
+\DeclareCiteCommand \shortref
+  { \usebibmacro { prenote } }
+  {
+    \ifnameundef { labelname }
+      { \printfield [ citetitle ] { labeltitle } }
+      { \printnames [ texign-family ] [ 1-1 ] { labelname } \printtext { \addspace } \printfield { year } }
+  }
+  { \multicitedelim }
+  { \usebibmacro { postnote } }
+\DeclareNameFormat { texign-family } { \namepartfamily }
+
 % ---- \printsources: primary sources and secondary literature -------------
+% One heading; then "Surse primare" and "Literatură secundară" when primary
+% sources exist, otherwise one list without subheadings.
+\bool_new:N \g__texign_has_primary_bool
+\defbibcheck { texign-primary } { \bool_gset_true:N \g__texign_has_primary_bool }
 \NewDocumentCommand \printsources { }
   {
     \printbibheading [ heading = texign ]
+    \bool_gset_false:N \g__texign_has_primary_bool
     \printbibliography
-      [ keyword = primary , heading = texignsub , title = \texign_string:n { primary } ]
-    \printbibliography
-      [ notkeyword = primary , heading = texignsub , title = \texign_string:n { secondary } ]
+      [ keyword = primary , check = texign-primary , heading = texignsub , title = \texign_string:n { primary } ]
+    \bool_if:NTF \g__texign_has_primary_bool
+      {
+        \printbibliography
+          [ notkeyword = primary , heading = texignsub , title = \texign_string:n { secondary } ]
+      }
+      { \printbibliography [ notkeyword = primary , heading = none ] }
   }

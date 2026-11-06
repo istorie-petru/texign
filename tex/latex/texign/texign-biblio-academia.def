@@ -43,7 +43,7 @@
   urlseen = {},
 }
 \DeclareFieldFormat{pages}{\mkpageprefix[bookpagination]{#1}}
-\DeclareFieldFormat{postnote}{\mkpageprefix[pagination]{#1}}
+\DeclareFieldFormat{postnote}{\mkpageprefix[pagination][\mknormrange]{#1}}
 
 % titles of studies are italic like book titles (no quotation marks);
 % the periodical or the collective volume is italic as well

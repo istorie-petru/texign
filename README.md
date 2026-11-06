@@ -26,11 +26,13 @@ Inside a document you only need:
 | Tables | booktabs rules as usual, `\head{..}` for header cells, `\structuredtable` for the T2 style |
 | Acronyms | `\acronym{unesco}` |
 | Citation convention | class option `citations=academia` (default, Romanian academic notes), `chicago`, `chicago-authordate`, `authordate`, `numeric` |
-| Citing | `\cite[page]{key}` written before punctuation, `\textcite{key}`; `\addbibresource{file.bib}` |
-| Glossary | `\addterms{termeni.bib}` in the preamble; `\term{key}`, `\Term{key}`, `\terms{key}` (plural); `\printterms` |
+| Citing | `\cite[page]{key}` written before punctuation, `\cites[p]{k1}[p]{k2}` for several works, `\textcite{key}`; `\addbibresource{file.bib}` |
+| Compact reference | `\shortref[page]{key}` → "Schnapp 1996, p. 13-17" (tables, timelines; never a note) |
+| Glossary | `\addterms{termeni.bib}` (or `\addterms[all]{…}` to list every entry) in the preamble; `\term{key}`, `\Term{key}`, `\terms{key}` (plural); `\printterms` (`\printterms*` without its heading) |
 | Abbreviations | `@abbreviation` entries in the same file; `\abbr{key}` (first use "long (SHORT)"); `\printabbreviations` |
 | Contents and lists | `\tableofcontents`, `\listoffigures`, `\listoftables` (margin images included) |
-| Chronology | `\begin{timeline}[title] \event{1864}{title}{description} ... \end{timeline}` |
+| Chronology | `\begin{timeline}[title] \event{1864}{title}{description} ... \end{timeline}`; empty title allowed; `\eventsource{...}` puts a source flush right |
+| Lists | `itemize`, `enumerate`, `description` (labels in sans on their own line) |
 | Comparison | `\begin{comparison}[caption]{Criterion}{A}{B}[C] \compare{row}{a}{b}[c] ... \end{comparison}` |
 | Newspapers | `@article` with `entrysubtype = {newspaper}` |
 | Bibliography | `\printsources` (primary sources and secondary literature; mark primary entries with `keywords = {primary}`) |

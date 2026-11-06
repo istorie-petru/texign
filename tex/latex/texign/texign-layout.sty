@@ -64,6 +64,12 @@
     \KOMAoptions { chapterprefix = true }
   }
 
+% ---- lists: description labels in sans semibold on their own line ------------
+\RequirePackage{enumitem}
+\setlist { itemsep = 2pt , topsep = 4pt plus 2pt }
+\setlist [ description ]
+  { style = nextline , leftmargin = 1.5em , font = \sffamily \bfseries \color{ink} }
+
 % ---- page furniture: header across text + margin, number in accent -----------
 \setkomafont { pageheadfoot } { \sffamily \footnotesize \color{muted} }
 \setkomafont { pagenumber } { \sffamily \footnotesize \color{accent} }

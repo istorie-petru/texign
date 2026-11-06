@@ -9,6 +9,8 @@
 %   \abbr{key}  \Abbr{key}                          an abbreviation: the first
 %                                                   use is "long (SHORT)"
 %   \printterms   \printabbreviations               print only what was used
+%   \addterms[all]{file}   print every entry of the file, used or not
+%   \printterms*           the list without its own heading
 % Only the terms actually used appear, sorted by Romanian (or English) rules.
 \NeedsTeXFormat{LaTeX2e}[2023-11-01]
 \ProvidesExplPackage{texign-glossary}{2026/11/06}{0.1.0}{Texign glossary}
@@ -27,17 +29,19 @@
     < j,J < k,K < l,L < m,M < n,N < o,O < p,P < q,Q < r,R < s,S < ș,Ș,ş,Ş
     < t,T < ț,Ț,ţ,Ţ < u,U < v,V < w,W < x,X < y,Y < z,Z
   }
-\NewDocumentCommand \addterms { m }
+\NewDocumentCommand \addterms { o m }
   {
+    \tl_set:Nn \l__texign_selection_tl { }
+    \tl_if_eq:nnT {#1} { all } { \tl_set:Nn \l__texign_selection_tl { selection = all , } }
     \str_if_eq:VnTF \g_texign_lang_tl { en }
       { \tl_set:Nn \l_tmpa_tl { sort = en-GB } }
       { \tl_set:Ne \l_tmpa_tl { sort = custom , sort-rule = { \exp_not:V \c__texign_sort_ro_tl } } }
     \exp_last_unbraced:Ne \GlsXtrLoadResources
-      { [ src = {#1} , type = main , match = { entrytype = entry } , \exp_not:V \l_tmpa_tl ] }
+      { [ src = {#2} , type = main , match = { entrytype = entry } , \exp_not:V \l__texign_selection_tl \exp_not:V \l_tmpa_tl ] }
     \exp_last_unbraced:Ne \GlsXtrLoadResources
-      { [ src = {#1} , type = abbreviations , match = { entrytype = abbreviation } , \exp_not:V \l_tmpa_tl ] }
+      { [ src = {#2} , type = abbreviations , match = { entrytype = abbreviation } , \exp_not:V \l__texign_selection_tl \exp_not:V \l_tmpa_tl ] }
   }
-\cs_generate_variant:Nn \tl_set:Nn { Ne }
+\tl_new:N \l__texign_selection_tl
 
 % ---- in the text: ink, no link colour; abbreviations in tracked capitals --
 \renewcommand* \glstextformat [1] { \textcolor{ink}{#1} }
@@ -78,10 +82,15 @@
       }
   }
 \renewcommand* \glossarysection [2] [ ] { \section* {#2} }
-\NewDocumentCommand \printterms { }
+% \printterms* prints the list without its heading (under a heading of your own)
+\NewDocumentCommand \printterms { s }
   {
     \glsxtrifemptyglossary { main } { }
-      { \printunsrtglossary [ type = main , style = texign , title = \texign_string:n { glossary } ] }
+      {
+        \IfBooleanTF {#1}
+          { \printunsrtglossary* [ type = main , style = texign , nogroupskip ] { \renewcommand* \glossarysection [2] [ ] { } } }
+          { \printunsrtglossary [ type = main , style = texign , title = \texign_string:n { glossary } ] }
+      }
   }
 \RenewDocumentCommand \printabbreviations { }
   {

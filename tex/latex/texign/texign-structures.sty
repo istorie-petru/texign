@@ -4,6 +4,8 @@
 %   \begin{timeline}[title]
 %     \event{1864}{Legea instrucțiunii publice}{Învățământ primar obligatoriu.}
 %     \event{1866–1914}{Domnia lui Carol I}{}          a period: a date range
+%     \event{1586}{}{Camden, \emph{Britannia} \eventsource{\shortref[139]{schnapp1996}}}
+%                                                     no title; source flush right
 %   \end{timeline}
 %   \begin{comparison}[caption]{Criteriu}{Legea din 1864}{Legea din 1896}[third]
 %     \compare{Obligativitate}{8–12 ani}{7–14 ani}[third]
@@ -62,12 +64,14 @@
     \vbox_set_top:Nn \l__texign_tl_box
       {
         \hsize = \l_tmpa_dim \linewidth = \hsize \raggedright
-        \noindent { \sffamily \bfseries \small #3 } \par
-        \tl_if_blank:nF {#4} { \vspace { 1pt } \noindent { \small #4 } \par }
+        \tl_if_blank:nF {#3} { \noindent { \sffamily \bfseries \small #3 } \par }
+        \tl_if_blank:nF {#4}
+          { \tl_if_blank:nF {#3} { \vspace { 1pt } } \noindent { \small #4 } \par }
       }
     \par \noindent
-    \makebox [ \l__texign_tl_date_dim ] [ r ]
-      { \sffamily \small \bfseries \color{accent} #2 }
+    % long dates ("sf. sec. V î.Hr.") wrap inside their column
+    \parbox [ t ] { \l__texign_tl_date_dim }
+      { \raggedleft \leavevmode \sffamily \small \bfseries \color{accent} #2 }
     \hspace { \l__texign_tl_gap_dim }
     % a dot per event; the line joins it to the previous dot (positions from
     % the previous run via remember picture); omitted across a page break
@@ -98,6 +102,14 @@
     \box_use:N \l__texign_tl_box
     \par
     \int_compare:nNnT {#1} < { \l__texign_tl_count_int } { \vspace { \l__texign_tl_skip_dim } }
+  }
+
+% \eventsource{...}: a source at the end of an event's text, flush right on
+% the same line when it fits, otherwise flush right on the next line
+\NewDocumentCommand \eventsource { m }
+  {
+    \unskip \nobreak \hfill \penalty 50 \hskip 1.5em \hbox { } \nobreak \hfill
+    \mbox { \sffamily \footnotesize \color{muted} #1 }
   }
 
 % ---- comparison (T2) -----------------------------------------------------------

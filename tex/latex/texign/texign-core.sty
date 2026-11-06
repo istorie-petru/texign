@@ -70,6 +70,7 @@
     secondary = Literatură~secundară ,
     glossary = Glosar , abbreviations = Abrevieri , chronology = Cronologie ,
     contents = Cuprins , listfigures = Lista~figurilor , listtables = Lista~tabelelor ,
+    appendix = Anexa , part = Partea , index = Index ,
   }
 \prop_gset_from_keyval:Nn \g__texign_strings_en_prop
   {
@@ -81,6 +82,7 @@
     secondary = Secondary~literature ,
     glossary = Glossary , abbreviations = Abbreviations , chronology = Chronology ,
     contents = Contents , listfigures = List~of~Figures , listtables = List~of~Tables ,
+    appendix = Appendix , part = Part , index = Index ,
   }
 \cs_new:Npn \texign_string:n #1
   { \prop_item:cn { g__texign_strings_ \g_texign_lang_tl _prop } {#1} }

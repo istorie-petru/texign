@@ -175,6 +175,30 @@ and line. Auxiliary files in `.texign/`, PDF next to the source.
   criteria column and 2–3 compared columns; optional caption numbers it as
   a table.
 
+### 2026-11-06 · Book layout (`texign-book`; proposed by Claude, open to István's review)
+
+- KOMA `scrbook`, two-sided by default (`sides=one` for screen), chapters
+  open on the right (`open=any` to avoid blank pages); blank pages are
+  really blank.
+- Same identity as the article: H4 chapter openings ("CAPITOLUL n", title,
+  accent rule), now starting 22 mm lower; chapter pages carry only the page
+  number. Running heads: chapter on left pages, section on right pages,
+  page numbers on the outer side.
+- Two-sided text block: 26 mm inner, 34 mm outer (foot/end); in margin
+  mode the margin column is always on the outer side, and wide figures,
+  chapter rules and the title rule extend towards it.
+- Title page on its own page: label, large sans title, subtitle, accent
+  rule, author; place/publisher and date at the foot. Optional dedication
+  page. Part pages: "PARTEA I" label and large sans title, no page number.
+  Appendices: "ANEXA A". Numbers without final period ("1.1").
+- Contents: parts in accent sans, chapters in sans semibold, sections in
+  the text face. Back matter (bibliography, glossary, index, lists) at
+  chapter level, listed in the contents.
+- Notes restart with every chapter (Romanian Academy norms); endnotes are
+  printed at the end of their chapter.
+- Index: `\index{...}` + `\printindex`, two columns, letter groups in accent
+  sans, Romanian order (upmendex/ICU).
+
 ## Known constraints
 
 - 2026-11-05 · The LaTeX kernel `ypos` property records 0 under LuaLaTeX

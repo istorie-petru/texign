@@ -1,8 +1,10 @@
 % texign-layout.sty — page layout, headings and page furniture (H4) for the
 % KOMA-Script based classes (texign-article, texign-book).
 %
-% notes=margin : text 118 mm + 8 mm gap + 42 mm margin column (A4)
-% notes=foot|end : one wider text block, 30 mm side margins, no column
+% notes=margin : text 118 mm + 8 mm gap + 42 mm margin column (A4); in
+%                two-sided documents the column is always on the outer side
+% notes=foot|end : one wider text block, no column (30 mm side margins;
+%                two-sided: 26 mm inner, 34 mm outer)
 % \texignfullwidth is the width of text + margin column (or just the text).
 \NeedsTeXFormat{LaTeX2e}[2023-11-01]
 \ProvidesExplPackage{texign-layout}{2026/11/05}{0.1.0}{Texign layout and headings}
@@ -26,9 +28,23 @@
         a4paper , top = 24mm , bottom = 28mm , hmargin = 30mm ,
         marginparwidth = 0pt , marginparsep = 0pt , headsep = 10mm ,
       }
+    \legacy_if:nT { @twoside } { \geometry { inner = 26mm , outer = 34mm } }
     \KOMAoptions { headwidth = text , footwidth = text }
   }
 \dim_gset:Nn \texignfullwidth { \textwidth + \marginparsep + \marginparwidth }
+
+% \texignwide{...}: content across text + margin column, extending to the
+% outer side (left on even pages of two-sided documents; needs two runs)
+\NewDocumentCommand \texignwide { +m }
+  {
+    \noindent
+    \makebox [ \linewidth ] [ l ]
+      {
+        \bool_lazy_and:nnT { \texign_if_margin_p: } { \legacy_if_p:n { @twoside } }
+          { \ifthispageodd { } { \hspace* { \dim_eval:n { - \marginparsep - \marginparwidth } } } }
+        \begin{minipage} [ t ] { \texignfullwidth } #1 \end{minipage}
+      }
+  }
 
 \setlength \parindent { 1.2em }
 \setlength \parskip { 0pt }
@@ -56,9 +72,9 @@
         \par \vspace{4pt}
       }
     \renewcommand* \chapterlineswithprefixformat [3]
-      { #2 #3 \par \vspace{8pt} { \color{accent} \rule { \texignfullwidth } { 0.6pt } } \par \texignmarginbarrier }
+      { #2 #3 \par \vspace{8pt} \texignwide { \color{accent} \rule { \texignfullwidth } { 0.6pt } } \par \texignmarginbarrier }
     \renewcommand* \chapterlinesformat [3]
-      { #3 \par \vspace{8pt} { \color{accent} \rule { \texignfullwidth } { 0.6pt } } \par \texignmarginbarrier }
+      { #3 \par \vspace{8pt} \texignwide { \color{accent} \rule { \texignfullwidth } { 0.6pt } } \par \texignmarginbarrier }
     \RedeclareSectionCommand
       [ beforeskip = -1sp , afterskip = 26pt , font = \fontsize{21}{26} \selectfont ] { chapter }
     \KOMAoptions { chapterprefix = true }
@@ -140,7 +156,7 @@
     \vspace{10pt}
     \noindent { \sffamily \small \color{ink} \@author \tl_if_empty:NF \@date { \quad \color{muted} \@date } \par }
     \vspace{8pt}
-    \noindent { \color{accent} \rule { \texignfullwidth } { 0.6pt } } \par
+    \texignwide { \color{accent} \rule { \texignfullwidth } { 0.6pt } } \par
     \texignmarginbarrier
     \vspace{18pt}
     \group_end:
@@ -148,6 +164,6 @@
     \@afterindentfalse \@afterheading
   }
 \RenewDocumentCommand \maketitle { } { \__texign_titleblock: \thispagestyle { plain.scrheadings } }
-\RenewDocumentEnvironment { abstract } { }
+\DeclareDocumentEnvironment { abstract } { }
   { \noindent \begin{minipage}{\textwidth} \sffamily \small \color{muted} \ignorespaces }
   { \end{minipage} \par \vspace{16pt} \@afterindentfalse \@afterheading }

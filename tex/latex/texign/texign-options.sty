@@ -11,8 +11,15 @@
 \tl_gset:Nn \g_texign_notes_tl { foot }
 \tl_new:N \g_texign_citations_tl
 \tl_gset:Nn \g_texign_citations_tl { academia }
+\tl_new:N \g_texign_sides_tl
+\tl_gset:Nn \g_texign_sides_tl { two }
+\tl_new:N \g_texign_open_tl
+\tl_gset:Nn \g_texign_open_tl { right }
 \keys_define:nn { texign }
   {
+    % books only: two-sided print layout, chapters opening on the right
+    sides .choices:nn = { two , one } { \tl_gset_eq:NN \g_texign_sides_tl \l_keys_choice_tl } ,
+    open  .choices:nn = { right , any } { \tl_gset_eq:NN \g_texign_open_tl \l_keys_choice_tl } ,
     lang  .choices:nn = { ro , en } { \tl_gset_eq:NN \g_texign_lang_tl \l_keys_choice_tl } ,
     notes .choices:nn = { margin , foot , end } { \tl_gset_eq:NN \g_texign_notes_tl \l_keys_choice_tl } ,
     citations .choices:nn = { academia , chicago , chicago-authordate , authordate , numeric }

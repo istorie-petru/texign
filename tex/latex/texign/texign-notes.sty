@@ -204,16 +204,28 @@
         \box_use:N \l__texign_out_box
       }
   }
+% the column sits right of the text, or left of it on even pages of
+% two-sided documents (in one-sided documents every page is odd)
 \DeclareNewLayer[
-    foreground, textarea,
+    foreground, textarea, oddpage,
     addhoffset = \textwidth + \marginparsep,
     width = \marginparwidth,
     contents = { \texign_if_margin:T { \parbox[t]{\layerwidth}{ \vspace*{0pt} \noindent \__texign_ms_page: } } }
-  ]{texign.margin}
-\AddLayersToPageStyle{scrheadings}{texign.margin}
-\AddLayersToPageStyle{plain.scrheadings}{texign.margin}
+  ]{texign.margin.odd}
+\DeclareNewLayer[
+    foreground, textarea, evenpage,
+    addhoffset = - \marginparsep - \marginparwidth,
+    width = \marginparwidth,
+    contents = { \texign_if_margin:T { \parbox[t]{\layerwidth}{ \vspace*{0pt} \noindent \__texign_ms_page: } } }
+  ]{texign.margin.even}
+\AddLayersToPageStyle{scrheadings}{texign.margin.odd,texign.margin.even}
+\AddLayersToPageStyle{plain.scrheadings}{texign.margin.odd,texign.margin.even}
 
 % ---- \note -------------------------------------------------------------------
+% \g__texign_note_int is the printed number (restarts with every chapter,
+% as the citation norms require); \g__texign_note_id_int only names boxes
+% and position records, so it never repeats
+\int_new:N \g__texign_note_id_int
 \NewDocumentCommand \note { m }
   {
     \str_case:VnF \g_texign_notes_tl
@@ -222,20 +234,32 @@
         { end }
           {
             \int_gincr:N \g__texign_note_int
+            \int_gincr:N \g__texign_note_id_int
             \__texign_note_mark:n { \int_use:N \g__texign_note_int }
             % typeset now (citations and counters as in the text), print later
-            \box_new:c { g__texign_end_ \int_use:N \g__texign_note_int _box }
-            \vbox_gset:cn { g__texign_end_ \int_use:N \g__texign_note_int _box }
+            \box_new:c { g__texign_end_ \int_use:N \g__texign_note_id_int _box }
+            \vbox_gset:cn { g__texign_end_ \int_use:N \g__texign_note_id_int _box }
               { \small \hsize = \textwidth \linewidth = \hsize \__texign_endnote:nn { \int_use:N \g__texign_note_int } {#1} }
             \tl_gput_right:Ne \g__texign_endnotes_tl
-              { \exp_not:N \__texign_endnote_use:n { \int_use:N \g__texign_note_int } }
+              { \exp_not:N \__texign_endnote_use:n { \int_use:N \g__texign_note_id_int } }
           }
       }
       {
         \int_gincr:N \g__texign_note_int
+        \int_gincr:N \g__texign_note_id_int
         \__texign_note_mark:n { \int_use:N \g__texign_note_int }
-        \__texign_flow:en { texign-n-\int_use:N \g__texign_note_int }
+        \__texign_flow:en { texign-n-\int_use:N \g__texign_note_id_int }
           { \__texign_note_font: \__texign_note_label:n { \int_use:N \g__texign_note_int } #1 }
+      }
+  }
+% books: numbering restarts with each chapter; endnotes are printed at the
+% end of the chapter they belong to
+\cs_if_exist:NT \chapter
+  {
+    \AddToHook { cmd/chapter/before }
+      {
+        \str_if_eq:VnT \g_texign_notes_tl { end } { \printnotes }
+        \int_gzero:N \g__texign_note_int
       }
   }
 \cs_new_protected:Npn \__texign_endnote_use:n #1
@@ -300,12 +324,7 @@
 \cs_new_protected:Npn \__texign_img_body:nn #1#2
   { \begin{figure}[htbp] \__texign_graphic:n {#1} \caption{#2} \end{figure} }
 \cs_new_protected:Npn \__texign_img_wide:nn #1#2
-  {
-    \begin{figure}[htbp]
-      \noindent \makebox[\linewidth][l]
-        { \begin{minipage}{\texignfullwidth} \__texign_graphic:n {#1} \caption{#2} \end{minipage} }
-    \end{figure}
-  }
+  { \begin{figure}[htbp] \texignwide { \__texign_graphic:n {#1} \caption{#2} } \end{figure} }
 % consecutive \image calls (spaces and blank lines between them allowed)
 % are collected and set as one row; anything else closes the row
 \cs_new_protected:Npn \__texign_imgq_peek:

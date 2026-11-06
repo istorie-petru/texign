@@ -11,6 +11,7 @@
 \RequirePackage{texign-blocks}
 \RequirePackage{texign-biblio}
 \RequirePackage{texign-structures}
+\RequirePackage{texign-index}
 \RequirePackage{hyperref}
 \hypersetup{ hidelinks , colorlinks = true , allcolors = accent , linktoc = page , pdfcreator = Texign }
 \RequirePackage{texign-glossary}

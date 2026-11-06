@@ -5,6 +5,7 @@
 #                             and margin positions to the auxiliary files
 #   2. Biber                  only when the document has a bibliography
 #   3. bib2gls                only when the document has a glossary
+#      upmendex               only when the document has an index
 #   4. LuaLaTeX, more passes  until labels, citations and margin positions
 #                             stop changing (at most 4 more passes)
 #
@@ -37,7 +38,7 @@ show_error() {
   grep -m1 -E '^[^ ]+:[0-9]+: |^! ' -A6 "$log" | sed 's/^/    /'
   echo "    full log: $(pwd)/$log"
 }
-state() { cat "$aux/$name.aux" "$aux/$name.bbl" "$aux/$name.out" "$aux"/*.glstex 2>/dev/null | md5sum | cut -d' ' -f1; }
+state() { cat "$aux/$name.aux" "$aux/$name.bbl" "$aux/$name.out" "$aux/$name.idx" "$aux"/*.glstex 2>/dev/null | md5sum | cut -d' ' -f1; }
 
 echo "${b}texign build${n} $name.tex"
 t0=$(date +%s.%N)
@@ -66,11 +67,22 @@ if grep -q 'glsxtr@resource' "$aux/$name.aux" 2>/dev/null; then
   fi
 fi
 
+if [[ -s "$aux/$name.idx" ]]; then
+  say "3. upmendex — index"
+  if openout_any=a upmendex -q -s "$ROOT/tex/latex/texign/texign.ist" -o "$aux/$name.ind" "$aux/$name.idx" >"$aux/upmendex.out" 2>&1; then
+    ok "($(grep -c 'item ' "$aux/$name.ind") entries)"
+  else
+    fail; echo; head -5 "$aux/upmendex.out" | sed 's/^/    /'; exit 1
+  fi
+fi
+
 prev=""; pass=2
 while (( pass <= 5 )); do
   cur=$(state)
   [[ "$cur" == "$prev" ]] && break
   prev="$cur"
+  # page numbers in the index follow the latest pass
+  [[ -s "$aux/$name.idx" ]] && openout_any=a upmendex -q -s "$ROOT/tex/latex/texign/texign.ist" -o "$aux/$name.ind" "$aux/$name.idx" >/dev/null 2>&1
   say "4. LuaLaTeX — pass $pass (references, margin)"
   if lualatex_pass; then ok; else fail; show_error; exit 1; fi
   # stop as soon as nothing that feeds the next pass has changed

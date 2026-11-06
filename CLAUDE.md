@@ -15,6 +15,9 @@ consistent across all document types.
 - `texign-biblio.sty`: biblatex profiles (academia default, chicago, chicago-authordate, authordate, numeric); academia details in `texign-biblio-academia.def`; note citations go through \note.
 - `texign-glossary.sty`: glossaries-extra + bib2gls (record mode); custom Romanian sort rule (Java's "ro" puts ș among s); terms and abbreviations from one .bib.
 - `texign-structures.sty`: timeline (TikZ remember picture: needs two passes) and comparison (T2 tabular).
+- `texign-index.sty` + `texign.ist`: imakeidx, sorted by upmendex (ICU, Romanian); the build runs upmendex with openout_any=a because .texign/ is a dot directory.
+- `texign-book.cls`: scrbook, two-sided by default; title page, part pages, appendix label, back matter at chapter level; notes restart per chapter (\g__texign_note_int printed, \g__texign_note_id_int for keys).
+- `\texignwide{...}`: text + margin width, extends to the outer side on even pages (\ifthispageodd, two passes).
 - `tools/texign-build`: the build sequence (lualatex → biber → bib2gls → lualatex until stable); `tools/texign` wraps it.
 - Internal code is expl3 with prefix `texign`; author commands are short and unprefixed.
 

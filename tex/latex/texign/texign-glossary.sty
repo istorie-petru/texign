@@ -81,7 +81,9 @@
         \glsentrylong {##1} \space { \sffamily \footnotesize \color{muted} ##2 }
       }
   }
-\renewcommand* \glossarysection [2] [ ] { \section* {#2} }
+\cs_if_exist:NTF \chapter
+  { \renewcommand* \glossarysection [2] [ ] { \chapter* {#2} \addcontentsline { toc } { chapter } {#2} \markboth {#2} {#2} } }
+  { \renewcommand* \glossarysection [2] [ ] { \section* {#2} } }
 % \printterms* prints the list without its heading (under a heading of your own)
 \NewDocumentCommand \printterms { s }
   {

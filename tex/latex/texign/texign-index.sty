@@ -1,0 +1,13 @@
+% texign-index.sty — index of names, places and subjects.
+%   \index{Pârvan, Vasile}   \index{Histria}   \index{stratigrafie!metodă}
+%   \printindex
+% Sorted by upmendex with Romanian collation (texign.ist); the build runs it.
+\NeedsTeXFormat{LaTeX2e}[2023-11-01]
+\ProvidesExplPackage{texign-index}{2026/11/06}{0.1.0}{Texign index}
+\RequirePackage{texign-core}
+\RequirePackage[noautomatic]{imakeidx}
+\use:e
+  { \exp_not:N \makeindex [ columns = 2 , columnsep = 8mm , intoc , title = \texign_string:n { index } ] }
+\cs_if_exist:NTF \chapter
+  { \indexsetup { level = \chapter* , toclevel = chapter , othercode = \small } }
+  { \indexsetup { level = \section* , toclevel = section , othercode = \small } }

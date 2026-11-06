@@ -89,8 +89,12 @@
 \setlength \bibitemsep { 3pt }
 \renewcommand* \bibfont { \small }
 \renewcommand* \mkbibnamefamily [1] {#1}  % never small caps (Plex has none)
-\defbibheading { texign } [ \texign_string:n { bibliography } ] { \section* {#1} }
-\defbibheading { texignsub } [ ] { \subsection* {#1} }
+\cs_if_exist:NTF \chapter
+  { \defbibheading { texign } [ \texign_string:n { bibliography } ] { \chapter* {#1} \addcontentsline { toc } { chapter } {#1} \markboth {#1} {#1} } }
+  { \defbibheading { texign } [ \texign_string:n { bibliography } ] { \section* {#1} } }
+\cs_if_exist:NTF \chapter
+  { \defbibheading { texignsub } [ ] { \section* {#1} } }
+  { \defbibheading { texignsub } [ ] { \subsection* {#1} } }
 
 % ---- the Romanian academic convention (citations=academia) ------------------
 \str_if_eq:VnT \g_texign_citations_tl { academia } { \file_input:n { texign-biblio-academia.def } }

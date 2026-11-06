@@ -16,7 +16,9 @@ Inside a document you only need:
 
 | Purpose | Command |
 |---|---|
-| Document type | `\documentclass[notes=margin|foot|end, lang=ro|en]{texign-article}` |
+| Document type | `\documentclass[notes=foot|margin|end, lang=ro|en]{texign-article}` or `{texign-book}` (also `sides=two|one`, `open=right|any`) |
+| Book structure | `\frontmatter`, `\maketitle` (own page; `\publishers`, `\dedication`), `\part`, `\chapter`, `\appendix`, `\backmatter` |
+| Index | `\index{Pârvan, Vasile}` in the text, `\printindex` (Romanian order) |
 | Notes | `\note{...}` (margin column, footnotes or endnotes, by the class option) |
 | Images | `\image{file}{caption}`, `\image[body]{..}{..}`, `\image[wide]{..}{..}` |
 | Image grid | `\begin{imagegrid}[cols]{caption} \gridimage{file}{caption} ... \end{imagegrid}` |
@@ -53,7 +55,8 @@ texign build article.tex
    labels and margin positions to the auxiliary files.
 2. **Biber**: only if the document has a bibliography.
 3. **bib2gls**: only if the document has a glossary or abbreviations
-   (needs Java, part of TeX Live's bib2gls).
+   (needs Java, part of TeX Live's bib2gls); **upmendex**: only if the
+   document has an index.
 4. **LuaLaTeX, further passes**: repeated until labels, citations and
    margin positions stop changing (at most four more passes).
 
@@ -88,4 +91,4 @@ The wiki is never a subdirectory or submodule of this repository. It is
 created on GitHub after the first wiki page is saved, then cloned next to
 this folder.
 
-Status: early development (0.1). Only `texign-article` exists so far.
+Status: early development (0.1). Classes: `texign-article`, `texign-book`.

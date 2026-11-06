@@ -1,0 +1,113 @@
+% Texign book example: front matter, parts, chapters, appendix, back matter.
+% Build with: texign build book.tex
+% Defaults: sides=two, open=right, notes=foot (numbering restarts in every
+% chapter), citations=academia.
+\documentclass{texign-book}
+
+\addbibresource{surse.bib}
+\addterms{termeni.bib}
+
+\subject{Exemplu Texign · Carte}
+\title{Școala românească între lege și practică}
+\subtitle{Surse, metode și interpretări (1864–1918)}
+\author{István}
+\publishers{București, 2026}
+\date{noiembrie 2026}
+\dedication{Învățătorilor de la sate, care au făcut școala posibilă.}
+
+\newcommand\Para{Legea din 1864 a introdus învățământul primar obligatoriu și gratuit, dar aplicarea ei a depins de resursele fiecărei comune. Rapoartele revizorilor școlari arată o realitate inegală: în unele sate școala funcționa într-o casă închiriată, în altele lipsea cu totul.}
+\newcommand\ParaB{Generația care a urmat a transformat școala într-un instrument al construcției naționale. Programele, manualele și formarea învățătorilor au devenit subiecte de dezbatere publică, iar presa a urmărit îndeaproape discuțiile parlamentare.}
+
+\begin{document}
+\frontmatter
+\maketitle
+\tableofcontents
+
+\chapter{Prefață}
+Această carte este un exemplu al clasei \texttt{texign-book}: arată paginile de titlu, părțile, capitolele, anexele, notele renumerotate la fiecare capitol, bibliografia, glosarul și indexul, toate în aceeași identitate vizuală ca articolele. Textul este demonstrativ; unele surse și cifre sunt fictive.
+
+\mainmatter
+\part{Surse}
+
+\chapter{Legea și sursele ei}\label{cap:lege}
+
+\Para\cite[art.~31]{lege1864} \ParaB\index{Legea instrucțiunii publice (1864)}
+
+\section{Textul normativ}
+\begin{source}{Legea instrucțiunii publice, 1864, art.~31}
+„Instrucțiunea primară este obligatorie și gratuită.”
+\end{source}
+
+\Para\cite[45-48]{iorga1928}\index{Iorga, Nicolae} Legea creează o obligație fără să creeze și mijloacele ei.\note{Distincția dintre norma juridică și practica socială este un loc comun al istoriografiei educației.}
+
+\begin{definition}[\Term{sursaprimara}]
+Document produs în perioada studiată, de un participant sau de un martor al evenimentelor.
+\end{definition}
+
+\section{Rapoartele revizorilor}
+Rapoartele \terms{revizor} sunt sursa cea mai apropiată de realitatea sălii de clasă.\cite{raport1872}\index{revizori școlari} \ParaB\cite[14]{popescu1929}
+
+\image{revizor-1872.jpg}{Prima pagină a unui raport de revizor școlar, 1872 (ilustrație).}
+
+\Para\cite[16]{popescu1929} \ParaB
+
+\begin{table}[htbp]
+\caption{Școli primare rurale și elevi înscriși, 1864–1914}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrr@{}}
+\toprule
+\head{An} & \head{Școli} & \head{Elevi} & \head{Elevi / școală}\\
+\midrule
+1864 & 2\,036 & 61\,000 & 30\\
+1890 & 2\,654 & 124\,000 & 47\\
+1914 & 4\,730 & 553\,000 & 117\\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\chapter{Reformele lui Spiru Haret}\label{cap:haret}
+
+\ParaB\cite{universul1906} Spiru Haret\index{Haret, Spiru} a legat explicit educația de dezvoltarea satului.\note{Spiru Haret (1851–1912), ministru al instrucțiunii în trei rânduri între 1897 și 1910.}
+
+\begin{timeline}[Reformele școlare]
+\event{1864}{Legea instrucțiunii publice}{Învățământul primar devine obligatoriu și gratuit.}
+\event{1896}{Legea învățământului primar}{Obligativitate extinsă; \terms{scoalanormala} pentru învățători.}
+\event{1897–1910}{Ministeriatele lui Spiru Haret}{Cercuri culturale, bănci populare, biblioteci sătești.}
+\end{timeline}
+
+\section{Școala și satul}
+\Para\cite[112]{murgescu2010}\index{Murgescu, Bogdan} \ParaB\cite[114]{murgescu2010}
+
+\begin{quotation}[Nicolae Iorga, \emph{Istoria învățământului românesc}, 1928]
+Școala satului nu poate fi mai bună decât învățătorul ei.
+\end{quotation}
+
+\begin{comparison}[Legile din 1864 și 1896]{Criteriu}{1864}{1896}
+\compare{Obligativitate}{8–12 ani}{7–14 ani}
+\compare{Învățători}{fără formare obligatorie}{\terms{scoalanormala}}
+\end{comparison}
+
+\part{Interpretări}
+
+\chapter{Limitele reformei}
+\Para\cite[115]{murgescu2010} Răscoala din 1907\index{răscoala din 1907} a arătat cât de departe era satul de proiectul elitelor.\cite[Cf.][18-21]{bourdieu1970} \ParaB\cite[cap.~5]{hitchins1994}\index{Hitchins, Keith}
+
+\begin{summary}
+\begin{itemize}
+\item Legea creează obligația; resursele vin mult mai târziu.
+\item Reformele lui Haret mută accentul de la principiu la organizare.
+\end{itemize}
+\end{summary}
+
+\appendix
+\chapter{Documente}
+\begin{source}{Legea instrucțiunii publice, 1864, art.~31}
+„Instrucțiunea primară este obligatorie și gratuită. Părinții sau tutorii sunt datori a trimite copiii la școală de la vârsta de 8 până la 12 ani.”
+\end{source}
+
+\backmatter
+\printsources
+\printterms
+\listoffigures
+\listoftables
+\printindex
+\end{document}

@@ -1,0 +1,17 @@
+Figura=Figura
+Tabelul=Tabelul
+Cuprins=Cuprins
+Lista figurilor=Lista figurilor
+Lista tabelelor=Lista tabelelor
+Bibliografie=Bibliografie
+Referințe=Referințe
+Index=Index
+Capitolul=Capitolul
+Partea=Partea
+Anexa=Anexa
+Rezumat=Rezumat
+Pagina=Pagina
+vezi=vezi
+vezi și=vezi și
+Glosar=Glosar
+DUPA=Figura FiguraIN=Tabelul Tabelul

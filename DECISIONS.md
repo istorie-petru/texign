@@ -210,6 +210,18 @@ and line. Auxiliary files in `.texign/`, PDF next to the source.
   collection (Arch: `texlive-langeuropean`); without them babel falls back
   to `nil` and nothing hyphenates.
 
+### 2026-11-08 · Languages and worksheets (István)
+
+- `lang=ro|en|fr`, also by full name (`română`, `english`, `français`...).
+  All three locales are always loaded; `\inlang{fr}{...}` and `inlanguage`
+  for passages. Generated names are Texign's own (ro: Figura, Tabelul,
+  Cuprins, Lista figurilor, Lista tabelelor, Capitolul, Partea, Anexa) and
+  are set through babel so they survive language switches.
+- French: unbreakable spacing before ; ! ? : » and after « (Lua, French text
+  only); write the usual spaces in the source.
+- `texign-worksheet`: `answers=hide|show|end`; exercises numbered, points
+  summed into the score field; Romanian plural "1 punct, 2 puncte, 20 de puncte".
+
 ## Known constraints
 
 - 2026-11-05 · The LaTeX kernel `ypos` property records 0 under LuaLaTeX

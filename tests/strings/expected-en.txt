@@ -1,0 +1,17 @@
+Figure=Figure
+Table=Table
+Contents=Contents
+List of Figures=List of Figures
+List of Tables=List of Tables
+Bibliography=Bibliography
+References=References
+Index=Index
+Chapter=Chapter
+Part=Part
+Appendix=Appendix
+Abstract=Abstract
+Page=Page
+see=see
+see also=see also
+Glossary=Glossary
+DUPA=Figure FigureIN=Table Table

@@ -126,12 +126,6 @@
 % \tableofcontents, \listoffigures, \listoftables. One look for all three:
 % sans numbers in accent, titles in the text face, page numbers in muted
 % sans flush right, no leader dots; section entries in sans semibold.
-\AtBeginDocument
-  {
-    \renewcommand \contentsname { \texign_string:n { contents } }
-    \renewcommand \listfigurename { \texign_string:n { listfigures } }
-    \renewcommand \listtablename { \texign_string:n { listtables } }
-  }
 \cs_new_protected:Npn \__texign_toc_number:n #1 { \textcolor{accent}{ \sffamily #1 } }
 \cs_new_protected:Npn \__texign_toc_page:n #1 { \textcolor{muted}{ \sffamily \small #1 } }
 \DeclareTOCStyleEntries
@@ -176,9 +170,13 @@
     \noindent { \sffamily \bfseries \fontsize{21}{26} \selectfont \raggedright \@title \par }
     \tl_if_empty:NF \@subtitle
       { \vspace{4pt} \noindent { \sffamily \large \color{muted} \raggedright \@subtitle \par } }
-    \vspace{10pt}
-    \noindent { \sffamily \small \color{ink} \@author \tl_if_empty:NF \@date { \quad \color{muted} \@date } \par }
-    \vspace{8pt}
+    \bool_lazy_and:nnTF { \tl_if_blank_p:V \@author } { \tl_if_blank_p:V \@date }
+      { \vspace{6pt} }
+      {
+        \vspace{10pt}
+        \noindent { \sffamily \small \color{ink} \@author \tl_if_empty:NF \@date { \quad \color{muted} \@date } \par }
+        \vspace{8pt}
+      }
     \texignwide { \color{accent} \rule { \texignfullwidth } { 0.6pt } } \par
     \texignmarginbarrier
     \vspace{18pt}

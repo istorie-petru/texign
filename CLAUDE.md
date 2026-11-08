@@ -18,6 +18,7 @@ consistent across all document types.
 - `texign-index.sty` + `texign.ist`: imakeidx, sorted by upmendex (ICU, Romanian); the build runs upmendex with openout_any=a because .texign/ is a dot directory.
 - `texign-book.cls`: scrbook, two-sided by default; title page, part pages, appendix label, back matter at chapter level; notes restart per chapter (\g__texign_note_int printed, \g__texign_note_id_int for keys).
 - `\texignwide{...}`: text + margin width, extends to the outer side on even pages (\Ifthispageodd, two passes).
+- `texign-exercises.sty` + `texign-worksheet.cls`: worksheets. `texign-french.lua`: French punctuation spacing.
 - `tools/texign-build`: the build sequence (lualatex → biber → bib2gls → lualatex until stable); `tools/texign` wraps it.
 - `scripts/texign-ctl`: user-level install/update/revert/status/remove (releases in ~/.local/share/texign, links in TEXMFHOME and ~/.local/bin); `scripts/texign-update` is the short form. Test: `tests/install.sh`.
 - Releases: `VERSION` + CHANGELOG + the version of both classes, checked by `tools/release-check`; process in CONTRIBUTING.md. CI in `.github/workflows/`.
@@ -40,4 +41,3 @@ consistent across all document types.
 - Booktabs rule macros must stay plain expandable macros (\noalign).
 - Margin items and endnotes are typeset into boxes when called (citations, counters) and only placed at shipout.
 - Tests: `tests/academia` (citation norms) and `tests/glossary` (Romanian order) compare text output with expected files.
-- Harmless biblatex warning "Language 'nil' not supported" at \begin{document}; not yet traced.

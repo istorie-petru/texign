@@ -20,7 +20,7 @@ jobs:
         run: |
           apt-get update -qq
           apt-get install -y -qq --no-install-recommends git default-jre-headless poppler-utils >/dev/null
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Trust the checkout
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Version numbers

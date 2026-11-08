@@ -1,0 +1,8 @@
+% upmendex style for Texign: English alphabetical order and letter groups.
+icu_locale "en"
+headings_flag 1
+heading_prefix "\n\\par\\addvspace{6pt}{\\sffamily\\bfseries\\color{accent}"
+heading_suffix "}\\par\\nopagebreak\n"
+delim_0 "\\quad{}"
+delim_1 "\\quad{}"
+delim_2 "\\quad{}"

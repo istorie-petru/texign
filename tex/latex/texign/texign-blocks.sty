@@ -129,11 +129,6 @@
   }
 \captionsetup[figure]{ position = bottom , skip = 8pt }
 \captionsetup[table]{ position = top , skip = 4pt }
-\AtBeginDocument
-  {
-    \renewcommand \figurename { \texign_string:n { figure } }
-    \renewcommand \tablename { \texign_string:n { table } }
-  }
 \renewcommand \thesubfigure { ( \alph{subfigure} ) }
 \captionsetup[sub]{ labelformat = simple }
 

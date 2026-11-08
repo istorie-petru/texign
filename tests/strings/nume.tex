@@ -1,0 +1,10 @@
+% Every name LaTeX generates, printed one per line, for each language.
+\documentclass[lang=ro]{texign-book}
+\begin{document}
+\newcommand\N[1]{\texttt{#1}=#1\par}
+\N\figurename \N\tablename \N\contentsname \N\listfigurename \N\listtablename
+\N\bibname \N\refname \N\indexname \N\chaptername \N\partname \N\appendixname
+\N\abstractname \N\pagename \N\seename \N\alsoname \N\glossaryname
+\inlang{français}{DUPA=\figurename} \figurename
+\begin{inlanguage}{en}IN=\tablename\end{inlanguage} \tablename
+\end{document}

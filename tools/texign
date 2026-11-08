@@ -49,6 +49,8 @@ case "$cmd" in
     done
     if kpsewhich hyph-ro.tex >/dev/null; then echo "ok    Romanian hyphenation"
     else echo "MISS  Romanian hyphenation (TeX Live European languages; Arch: texlive-langeuropean)"; ok=0; fi
+    if kpsewhich hyph-fr.tex >/dev/null; then echo "ok    French hyphenation (optional)"
+    else echo "note  French hyphenation is missing; needed only for lang=fr (Arch: texlive-langfrench)"; fi
     "$ROOT/tests/smoke.sh" >/dev/null 2>&1 && echo "ok    test build" || { echo "FAIL  test build (run tests/smoke.sh)"; ok=0; }
     ((ok)) && echo "Texign is ready." || exit 1 ;;
   install) exec "$ROOT/scripts/texign-ctl" install --dev ;;

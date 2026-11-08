@@ -32,6 +32,9 @@
 \renewcommand*{\intitlepunct}{\space}
 \DefineBibliographyExtras{romanian}{\renewcommand*{\bibrangedash}{-\nolinebreak[4]}}
 \DefineBibliographyExtras{english}{\renewcommand*{\bibrangedash}{-\nolinebreak[4]}}
+\DefineBibliographyExtras{french}{\renewcommand*{\bibrangedash}{-\nolinebreak[4]}}
+\DefineBibliographyStrings{english}{nodate = {n\adddot d\adddot}, urlseen = {}}
+\DefineBibliographyStrings{french}{nodate = {s\adddot d\adddot}, urlseen = {}}
 
 \DefineBibliographyStrings{romanian}{%
   page    = {p\adddot},

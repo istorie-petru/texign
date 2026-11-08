@@ -16,7 +16,7 @@
 \RequirePackage{texign-core}
 \tl_new:N \l__texign_sortlocale_tl
 \tl_set:Ne \l__texign_sortlocale_tl
-  { \str_if_eq:VnTF \g_texign_lang_tl { en } { en_GB } { ro_RO } }
+  { \str_case:Vn \g_texign_lang_tl { { ro } { ro_RO } { en } { en_GB } { fr } { fr_FR } } }
 \bool_new:N \g__texign_cite_notes_bool   % citations become notes
 
 \cs_new_protected:Npn \__texign_biblatex:n #1
@@ -78,6 +78,16 @@
       { \DeclareDocumentCommand \cite { } { \leavevmode \unskip \space \autocite } }
   }
 
+% biblatex-chicago formats @legislation as American case law ("at art. 31");
+% laws are cited here as plain documents
+\str_if_in:NnT \g_texign_citations_tl { chicago }
+  {
+    \DeclareSourcemap
+      { \maps [ datatype = bibtex ] { \map { \step [ typesource = legislation , typetarget = misc ] } } }
+  }
+% babel's internal "nil" locale has no biblatex strings; map it to stay quiet
+\DeclareLanguageMapping { nil } { english }
+
 % types historians use that standard styles do not define
 \str_if_in:NnF \g_texign_citations_tl { chicago }
   {
@@ -133,17 +143,16 @@
 % One heading; then "Surse primare" and "Literatură secundară" when primary
 % sources exist, otherwise one list without subheadings.
 \bool_new:N \g__texign_has_primary_bool
-\defbibcheck { texign-primary } { \bool_gset_true:N \g__texign_has_primary_bool }
+\AtDataInput { \ifkeyword { primary } { \bool_gset_true:N \g__texign_has_primary_bool } { } }
 \NewDocumentCommand \printsources { }
   {
     \printbibheading [ heading = texign ]
-    \bool_gset_false:N \g__texign_has_primary_bool
-    \printbibliography
-      [ keyword = primary , check = texign-primary , heading = texignsub , title = \texign_string:n { primary } ]
     \bool_if:NTF \g__texign_has_primary_bool
       {
         \printbibliography
+          [ keyword = primary , heading = texignsub , title = \texign_string:n { primary } ]
+        \printbibliography
           [ notkeyword = primary , heading = texignsub , title = \texign_string:n { secondary } ]
       }
-      { \printbibliography [ notkeyword = primary , heading = none ] }
+      { \printbibliography [ heading = none ] }
   }

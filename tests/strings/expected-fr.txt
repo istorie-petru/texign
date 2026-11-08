@@ -1,0 +1,17 @@
+Figure=Figure
+Tableau=Tableau
+Table des matières=Table des matières
+Table des figures=Table des figures
+Liste des tableaux=Liste des tableaux
+Bibliographie=Bibliographie
+Références=Références
+Index=Index
+Chapitre=Chapitre
+Partie=Partie
+Annexe=Annexe
+Résumé=Résumé
+Page=Page
+voir=voir
+voir aussi=voir aussi
+Glossaire=Glossaire
+DUPA=Figure FigureIN=Tableau Tableau

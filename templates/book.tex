@@ -1,0 +1,23 @@
+% Texign book. Options: lang=ro|en|fr, notes=foot|margin|end, sides=two|one,
+% open=right|any, citations=academia|chicago|chicago-authordate|authordate|numeric
+% Build with: texign build THIS-FILE.tex
+\documentclass{texign-book}
+
+\subject{}
+\title{Titlul cărții}
+\subtitle{}
+\author{István}
+\date{\today}
+
+\begin{document}
+\frontmatter
+\maketitle
+\tableofcontents
+
+\mainmatter
+\part{Prima parte}
+\chapter{Primul capitol}
+Textul începe aici.\note{O notă.}
+
+\backmatter
+\end{document}

@@ -11,16 +11,35 @@
 \tl_gset:Nn \g_texign_notes_tl { foot }
 \tl_new:N \g_texign_citations_tl
 \tl_gset:Nn \g_texign_citations_tl { academia }
+\tl_new:N \g_texign_answers_tl
+\tl_gset:Nn \g_texign_answers_tl { hide }
 \tl_new:N \g_texign_sides_tl
 \tl_gset:Nn \g_texign_sides_tl { two }
 \tl_new:N \g_texign_open_tl
 \tl_gset:Nn \g_texign_open_tl { right }
+% every way of naming a supported language -> its two-letter code
+\msg_new:nnn { texign } { unknown-lang }
+  { Unknown~language~'#1'.~Texign~supports~ro,~en~and~fr. }
+\cs_new:Npn \texign_lang:n #1
+  {
+    \str_case_e:nnF { \str_foldcase:n {#1} }
+      {
+        { ro } { ro } { romanian } { ro } { romana } { ro } { română } { ro } { româna } { ro }
+        { en } { en } { english } { en } { engleza } { en } { engleză } { en }
+        { fr } { fr } { french } { fr } { francais } { fr } { français } { fr }
+          { franceza } { fr } { franceză } { fr }
+      }
+      { \msg_expandable_error:nnn { texign } { unknown-lang } {#1} ro }
+  }
 \keys_define:nn { texign }
   {
     % books only: two-sided print layout, chapters opening on the right
+    % worksheets only: answers hidden, shown in place, or collected at the end
+    answers .choices:nn = { hide , show , end } { \tl_gset_eq:NN \g_texign_answers_tl \l_keys_choice_tl } ,
     sides .choices:nn = { two , one } { \tl_gset_eq:NN \g_texign_sides_tl \l_keys_choice_tl } ,
     open  .choices:nn = { right , any } { \tl_gset_eq:NN \g_texign_open_tl \l_keys_choice_tl } ,
-    lang  .choices:nn = { ro , en } { \tl_gset_eq:NN \g_texign_lang_tl \l_keys_choice_tl } ,
+    % lang=ro|en|fr; the full names are accepted too (see \texign_lang:n)
+    lang  .code:n = { \tl_gset:Ne \g_texign_lang_tl { \texign_lang:n {#1} } } ,
     notes .choices:nn = { margin , foot , end } { \tl_gset_eq:NN \g_texign_notes_tl \l_keys_choice_tl } ,
     citations .choices:nn = { academia , chicago , chicago-authordate , authordate , numeric }
       { \tl_gset_eq:NN \g_texign_citations_tl \l_keys_choice_tl } ,

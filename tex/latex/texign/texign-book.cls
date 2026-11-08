@@ -1,5 +1,5 @@
 % texign-book.cls — long documents: books, theses, manuals, curricula.
-%   \documentclass[lang=ro|en, notes=foot|margin|end, citations=...,
+%   \documentclass[lang=ro|en|fr, notes=foot|margin|end, citations=...,
 %                  sides=two|one, open=right|any]{texign-book}
 % Structure: \frontmatter \maketitle \tableofcontents ... \mainmatter
 %            \part \chapter \section ... \appendix \chapter ... \backmatter

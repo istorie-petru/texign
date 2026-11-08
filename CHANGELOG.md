@@ -11,7 +11,19 @@ release. The format loosely follows
 - Long words and URLs: looser line breaking, URLs in notes and bibliography
   break anywhere, table cells can hyphenate their first word.
 - Comparison tables keep their caption on the same page.
-- `texign doctor` reports missing Romanian hyphenation patterns.
+- `texign doctor` reports missing Romanian (and, as a note, French) hyphenation patterns.
+- New class `texign-worksheet`: exercises, questions, multiple choice,
+  answer lines, boxes and grids, inline blanks, summed points, and answers
+  hidden, shown in place or collected at the end.
+- Languages: `lang=ro|en|fr` (full names accepted), `\inlang` and
+  `inlanguage` for passages in another language, French punctuation spacing.
+  All names LaTeX generates (figure, table, contents...) come from Texign's
+  own tables and survive language switches. Bibliography, glossary and index
+  sort by the document's language.
+- Chicago styles cite laws as plain documents (no more "at art. 31").
+- `\printsources` no longer triggers "Empty bibliography"; the biblatex
+  "nil" language warning is gone.
+- Templates for books and worksheets; GitHub Actions updated.
 
 ## [0.1.0]
 

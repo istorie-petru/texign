@@ -43,6 +43,22 @@ if "$ROOT/tools/texign-build" "$dir/sortare.tex" >"$dir/build.out" 2>&1 \
 else
   echo "FAIL  glossary-order"; sed 's/^/      /' "$dir/diff.out" "$dir/build.out" | tail -12; fail=1
 fi
+# worksheets: the three answer modes
+for a in hide show end; do
+  dir="$out/ws-$a"; mkdir -p "$dir"
+  sed "s/\\\\documentclass{texign-worksheet}/\\\\documentclass[answers=$a]{texign-worksheet}/" "$ROOT/examples/worksheet/fisa.tex" > "$dir/fisa.tex"
+  if "$ROOT/tools/texign-build" "$dir/fisa.tex" >"$dir/build.out" 2>&1; then echo "ok    worksheet-$a"
+  else echo "FAIL  worksheet-$a"; tail -8 "$dir/build.out"; fail=1; fi
+done
+# the names LaTeX generates, in every language
+for l in ro en fr; do
+  dir="$out/strings-$l"; mkdir -p "$dir"
+  sed "s/lang=ro/lang=$l/" "$ROOT/tests/strings/nume.tex" > "$dir/nume.tex"
+  if "$ROOT/tools/texign-build" "$dir/nume.tex" >"$dir/build.out" 2>&1 \
+     && diff <(pdftotext "$dir/nume.pdf" - | grep '=') "$ROOT/tests/strings/expected-$l.txt" >"$dir/diff.out"; then
+    echo "ok    strings-$l"
+  else echo "FAIL  strings-$l"; sed 's/^/      /' "$dir/diff.out" "$dir/build.out" | tail -12; fail=1; fi
+done
 # nothing runs past the margins: no line more than 1pt too wide
 # (needs the Romanian hyphenation patterns, which not every TeX Live has)
 dir="$out/overflow"; cp -r "$ROOT/tests/overflow" "$dir"

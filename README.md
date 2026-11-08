@@ -149,7 +149,13 @@ texign build eseu.tex
   → eseu.pdf, 2 pages, 8.2 s (3 warnings in .texign/eseu.log)
 ```
 
-Class options: `notes=foot|margin|end`, `lang=ro|en`,
+Classes: `texign-article`, `texign-book`, `texign-worksheet` (extra option
+`answers=hide|show|end`; `exercise`, `activity`, `questions`/`\question[points]`,
+`choices`/`\choice`/`\correct`, `\answerlines`, `\answerbox`, `\answergrid`,
+`\blank[width]{answer}`, `answer`). A passage in another language:
+`\inlang{fr}{...}` or the `inlanguage` environment.
+
+Class options: `notes=foot|margin|end`, `lang=ro|en|fr`,
 `citations=academia|chicago|chicago-authordate|authordate|numeric`, and for
 books `sides=two|one`, `open=right|any`. Every command is listed in the
 [Command reference](../../wiki/Command-reference).

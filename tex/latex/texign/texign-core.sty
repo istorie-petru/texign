@@ -50,27 +50,60 @@
   { { \addfontfeatures { LetterSpace = 5 } \text_uppercase:n {#1} } }
 
 % ---- languages ---------------------------------------------------------------
-% babel's ini locales (the Romanian .ldf is not part of every TeX Live).
+% lang=ro|en|fr selects the main language; all three are always loaded, so
+% \inlang{fr}{...} and the inlanguage environment work in any document.
+% babel's ini locales (independent of the optional .ldf files). Every name
+% LaTeX generates comes from the tables below, set through babel, so it
+% survives language switches.
 \RequirePackage{babel}
-\str_if_eq:VnTF \g_texign_lang_tl { en }
-  { \babelprovide[import]{romanian} \babelprovide[import,main]{english} }
-  { \babelprovide[import]{english} \babelprovide[import,main]{romanian} }
+\prop_const_from_keyval:Nn \c__texign_babel_prop { ro = romanian , en = english , fr = french }
+\cs_new:Npn \texign_babel_name:n #1 { \prop_item:Nn \c__texign_babel_prop {#1} }
+\cs_generate_variant:Nn \texign_babel_name:n { V , e }
+\clist_map_inline:nn { ro , en , fr }
+  {
+    \str_if_eq:VnF \g_texign_lang_tl {#1}
+      { \use:e { \exp_not:N \babelprovide [ import ] { \texign_babel_name:n {#1} } } }
+  }
+\use:e { \exp_not:N \babelprovide [ import , main ] { \texign_babel_name:V \g_texign_lang_tl } }
 \RequirePackage{csquotes}
+\iow_log:e { Texign~language:~\g_texign_lang_tl }
 
-% localised strings used by Texign components: \texignstring{key}
+% a passage in another language: \inlang{fr}{...} or
+% \begin{inlanguage}{en} ... \end{inlanguage} (hyphenation, quotes)
+\NewDocumentCommand \inlang { m +m }
+  { \foreignlanguage { \texign_babel_name:e { \texign_lang:n {#1} } } {#2} }
+\NewDocumentEnvironment { inlanguage } { m }
+  { \use:e { \exp_not:N \begin { otherlanguage* } { \texign_babel_name:e { \texign_lang:n {#1} } } } }
+  { \end { otherlanguage* } }
+
+% French spacing: the usual space typed before ; : ! ? and inside « » becomes
+% unbreakable (thin before ; ! ?), so punctuation never starts a line
+\lua_now:e
+  {
+    texign_french_language = \int_use:c { l@french } ;
+    dofile ( kpse.find_file ( "texign-french.lua" ) )
+  }
+
+% localised strings: \texignstring{key}. These are the terms Romanian,
+% English and French academic texts actually use.
 \prop_new:N \g__texign_strings_ro_prop
 \prop_new:N \g__texign_strings_en_prop
+\prop_new:N \g__texign_strings_fr_prop
 \prop_gset_from_keyval:Nn \g__texign_strings_ro_prop
   {
     definition = Definiție , concept = Concept , example = Exemplu ,
     remark = Notă , warning = Atenție , summary = Rezumat ,
     instructions = Instrucțiuni , source = Sursă , notes = Note ,
     figure = Figura , table = Tabelul , chapter = Capitolul ,
-    bibliography = Bibliografie , primary = Surse~primare ,
+    bibliography = Bibliografie , references = Referințe , primary = Surse~primare ,
     secondary = Literatură~secundară ,
     glossary = Glosar , abbreviations = Abrevieri , chronology = Cronologie ,
     contents = Cuprins , listfigures = Lista~figurilor , listtables = Lista~tabelelor ,
-    appendix = Anexa , part = Partea , index = Index ,
+    appendix = Anexa , part = Partea , index = Index , abstract = Rezumat ,
+    page = Pagina , see = vezi , seealso = vezi~și ,
+    exercise = Exercițiul , question = Întrebarea , answer = Răspuns ,
+    answers = Răspunsuri , activity = Activitate , name = Nume , class = Clasa ,
+    date = Data , score = Punctaj , point = punct , points = puncte ,
   }
 \prop_gset_from_keyval:Nn \g__texign_strings_en_prop
   {
@@ -78,11 +111,61 @@
     remark = Note , warning = Warning , summary = Summary ,
     instructions = Instructions , source = Source , notes = Notes ,
     figure = Figure , table = Table , chapter = Chapter ,
-    bibliography = Bibliography , primary = Primary~sources ,
+    bibliography = Bibliography , references = References , primary = Primary~sources ,
     secondary = Secondary~literature ,
     glossary = Glossary , abbreviations = Abbreviations , chronology = Chronology ,
     contents = Contents , listfigures = List~of~Figures , listtables = List~of~Tables ,
-    appendix = Appendix , part = Part , index = Index ,
+    appendix = Appendix , part = Part , index = Index , abstract = Abstract ,
+    page = Page , see = see , seealso = see~also ,
+    exercise = Exercise , question = Question , answer = Answer ,
+    answers = Answers , activity = Activity , name = Name , class = Class ,
+    date = Date , score = Score , point = point , points = points ,
+  }
+\prop_gset_from_keyval:Nn \g__texign_strings_fr_prop
+  {
+    definition = Définition , concept = Concept , example = Exemple ,
+    remark = Remarque , warning = Attention , summary = Résumé ,
+    instructions = Consignes , source = Source , notes = Notes ,
+    figure = Figure , table = Tableau , chapter = Chapitre ,
+    bibliography = Bibliographie , references = Références , primary = Sources~primaires ,
+    secondary = Littérature~secondaire ,
+    glossary = Glossaire , abbreviations = Abréviations , chronology = Chronologie ,
+    contents = Table~des~matières , listfigures = Table~des~figures ,
+    listtables = Liste~des~tableaux ,
+    appendix = Annexe , part = Partie , index = Index , abstract = Résumé ,
+    page = Page , see = voir , seealso = voir~aussi ,
+    exercise = Exercice , question = Question , answer = Réponse ,
+    answers = Réponses , activity = Activité , name = Nom , class = Classe ,
+    date = Date , score = Note , point = point , points = points ,
+  }
+% hand babel the names LaTeX prints by itself (\figurename, \contentsname...)
+\cs_new_protected:Npn \__texign_caption:nnn #1#2#3
+  % #1 language code, #2 babel's name for the caption, #3 our string key
+  {
+    \use:e
+      {
+        \exp_not:N \setlocalecaption { \texign_babel_name:n {#1} } {#2}
+          { \prop_item:cn { g__texign_strings_#1_prop } {#3} }
+      }
+  }
+\clist_map_inline:nn { ro , en , fr }
+  {
+    \__texign_caption:nnn {#1} { figure } { figure }
+    \__texign_caption:nnn {#1} { table } { table }
+    \__texign_caption:nnn {#1} { contents } { contents }
+    \__texign_caption:nnn {#1} { listfigure } { listfigures }
+    \__texign_caption:nnn {#1} { listtable } { listtables }
+    \__texign_caption:nnn {#1} { bib } { bibliography }
+    \__texign_caption:nnn {#1} { ref } { references }
+    \__texign_caption:nnn {#1} { index } { index }
+    \__texign_caption:nnn {#1} { chapter } { chapter }
+    \__texign_caption:nnn {#1} { part } { part }
+    \__texign_caption:nnn {#1} { appendix } { appendix }
+    \__texign_caption:nnn {#1} { abstract } { abstract }
+    \__texign_caption:nnn {#1} { page } { page }
+    \__texign_caption:nnn {#1} { see } { see }
+    \__texign_caption:nnn {#1} { also } { seealso }
+    \__texign_caption:nnn {#1} { glossary } { glossary }
   }
 \cs_new:Npn \texign_string:n #1
   { \prop_item:cn { g__texign_strings_ \g_texign_lang_tl _prop } {#1} }

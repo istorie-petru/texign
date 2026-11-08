@@ -1,0 +1,246 @@
+% texign-exercises.sty — exercises, questions and answer spaces.
+%
+% Author interface
+%   \begin{exercise}[title=..., points=10] ... \end{exercise}     numbered
+%   \begin{activity}[title] ... \end{activity}                    not numbered
+%   \begin{questions} \question[2] text ... \end{questions}       a), b), ...
+%   \begin{choices} \choice wrong \correct right \end{choices}    A., B., ...
+%   \answerlines[3]  \answerbox[30mm]  \answergrid[40mm]          answer spaces
+%   \blank[30mm]{answer}                                          inline blank
+%   \begin{answer} model answer \end{answer}
+% Class option answers=hide (default), show (in place, spaces removed) or
+% end (collected on a last page). Points are summed: an exercise without
+% points of its own counts the points of its questions.
+\NeedsTeXFormat{LaTeX2e}[2023-11-01]
+\ProvidesExplPackage{texign-exercises}{2026/11/08}{0.1.0}{Texign exercises}
+\RequirePackage{texign-core}
+\RequirePackage{texign-blocks}
+\RequirePackage{enumitem}
+\RequirePackage{tikz}
+
+\prg_new_conditional:Npnn \__texign_ans_if:n #1 { T , F , TF }
+  { \str_if_eq:VnTF \g_texign_answers_tl {#1} { \prg_return_true: } { \prg_return_false: } }
+
+% ---- points --------------------------------------------------------------
+% "1 punct, 2 puncte, 20 de puncte" (Romanian); "1 point, 2 points";
+% decimals with the comma in Romanian and French
+\cs_new:Npn \__texign_number:n #1
+  {
+    \str_if_eq:VnTF \g_texign_lang_tl { en }
+      { \fp_eval:n {#1} }
+      { \exp_args:Ne \__texign_comma:n { \fp_eval:n {#1} } }
+  }
+\cs_new:Npn \__texign_comma:n #1 { \__texign_comma:w #1 . \q_stop }
+\cs_new:Npn \__texign_comma:w #1 . #2 \q_stop
+  { #1 \tl_if_blank:nF {#2} { , \__texign_nodot:w #2 } }
+\cs_new:Npn \__texign_nodot:w #1 . { #1 }
+\cs_new:Npn \__texign_points:n #1
+  {
+    \__texign_number:n {#1} \nobreakspace
+    \str_case:VnF \g_texign_lang_tl
+      {
+        { ro }
+          {
+            \fp_compare:nNnTF {#1} = { 1 }
+              { \texign_string:n { point } }
+              {
+                \bool_lazy_and:nnT
+                  { \fp_compare_p:nNn { trunc(#1) } = {#1} }
+                  {
+                    \bool_lazy_or_p:nn
+                      { \fp_compare_p:nNn { (#1) - 100 * trunc((#1) / 100) } > { 19 } }
+                      {
+                        \bool_lazy_and_p:nn
+                          { \fp_compare_p:nNn {#1} > { 0 } }
+                          { \fp_compare_p:nNn { (#1) - 100 * trunc((#1) / 100) } = { 0 } }
+                      }
+                  }
+                  { de \nobreakspace }
+                \texign_string:n { points }
+              }
+          }
+        { fr }
+          { \fp_compare:nNnTF {#1} < { 2 } { \texign_string:n { point } } { \texign_string:n { points } } }
+      }
+      { \fp_compare:nNnTF {#1} = { 1 } { \texign_string:n { point } } { \texign_string:n { points } } }
+  }
+\NewExpandableDocumentCommand \points { m } { \__texign_points:n {#1} }
+
+\fp_new:N \g__texign_total_fp
+\fp_new:N \g__texign_ex_sum_fp
+\tl_new:N \l__texign_ex_points_tl
+\tl_new:N \l__texign_ex_title_tl
+\providecommand \texignworksheettotal { }
+\AtEndDocument
+  {
+    \iow_now:Ne \@auxout
+      { \gdef \exp_not:N \texignworksheettotal { \fp_eval:n { \g__texign_total_fp } } }
+  }
+
+% ---- exercises --------------------------------------------------------------
+\newcounter { exercise }
+\keys_define:nn { texign / exercise }
+  {
+    title  .tl_set:N = \l__texign_ex_title_tl ,
+    points .tl_set:N = \l__texign_ex_points_tl ,
+  }
+\NewDocumentEnvironment { exercise } { O{} }
+  {
+    \par \addvspace { 18pt }
+    \needspace { 5 \baselineskip }
+    \refstepcounter { exercise }
+    \tl_clear:N \l__texign_ex_title_tl
+    \tl_clear:N \l__texign_ex_points_tl
+    \keys_set:nn { texign / exercise } {#1}
+    \fp_gzero:N \g__texign_ex_sum_fp
+    \noindent
+    {
+      \sffamily \bfseries \color{accent}
+      \texign_string:n { exercise } \nobreakspace \theexercise
+      \tl_if_empty:NF \l__texign_ex_title_tl
+        { \textcolor{ink} { \enspace \l__texign_ex_title_tl } }
+    }
+    \tl_if_empty:NF \l__texign_ex_points_tl
+      {
+        \hfill
+        { \sffamily \footnotesize \color{muted} \__texign_points:n { \l__texign_ex_points_tl } }
+      }
+    \par \nopagebreak \vspace { 3pt } \nopagebreak
+    \ignorespaces
+  }
+  {
+    \tl_if_empty:NTF \l__texign_ex_points_tl
+      { \fp_gadd:Nn \g__texign_total_fp { \g__texign_ex_sum_fp } }
+      { \fp_gadd:Nn \g__texign_total_fp { \l__texign_ex_points_tl } }
+    \par \addvspace { 12pt }
+  }
+\NewDocumentEnvironment { activity } { O{} }
+  {
+    \begin{tcolorbox} [ texign/box = example ]
+    \noindent \__texign_box_label:nnn { example } { activity } {#1}
+  }
+  { \end{tcolorbox} }
+
+% ---- questions and choices ----------------------------------------------------
+\newlist { questions } { enumerate } { 1 }
+\setlist [ questions ]
+  { label = { \textsf { \textbf { \color{accent} \alph* ) } } } ,
+    leftmargin = 1.8em , itemsep = 6pt , topsep = 4pt }
+\NewDocumentCommand \question { o }
+  {
+    \item
+    \IfValueT {#1}
+      {
+        \fp_gadd:Nn \g__texign_ex_sum_fp {#1}
+        { \sffamily \footnotesize \color{muted} ( \__texign_points:n {#1} ) } \enspace
+      }
+    \ignorespaces
+  }
+\newlist { choiceslist } { enumerate } { 1 }
+\setlist [ choiceslist ]
+  { label = { \textsf { \small \color{muted} \Alph* . } } ,
+    leftmargin = 1.8em , itemsep = 2pt , topsep = 3pt }
+\NewDocumentEnvironment { choices } { }
+  {
+    \begin{choiceslist}
+    \cs_set_protected:Npn \choice { \item \normalfont \color{ink} \ignorespaces }
+    \cs_set_protected:Npn \correct
+      {
+        \item \normalfont \color{ink}
+        \__texign_ans_if:nT { end }
+          { \exp_args:Ne \__texign_answer_store:n { \Alph { choiceslisti } } }
+        \__texign_ans_if:nT { show } { \bfseries \color{accent} }
+        \ignorespaces
+      }
+  }
+  { \end{choiceslist} }
+
+% ---- answer spaces ----------------------------------------------------------------
+\NewDocumentCommand \answerlines { O{3} }
+  {
+    \__texign_ans_if:nF { show }
+      {
+        \par \vspace { 4pt }
+        \prg_replicate:nn {#1}
+          {
+            \noindent \textcolor{rule} { \rule { \linewidth } { 0.4pt } }
+            \par \vspace { 1.25\baselineskip }
+          }
+      }
+  }
+\NewDocumentCommand \answerbox { O{30mm} }
+  {
+    \__texign_ans_if:nF { show }
+      {
+        \par \vspace { 4pt } \noindent
+        \begin{tikzpicture}
+          \draw [ rule , line~width = 0.4pt ]
+            (0,0) rectangle ( \dim_eval:n { \linewidth - 0.4pt } , \dim_eval:n {#1} ) ;
+        \end{tikzpicture}
+        \par \vspace { 6pt }
+      }
+  }
+\NewDocumentCommand \answergrid { O{40mm} }
+  {
+    \__texign_ans_if:nF { show }
+      {
+        \par \vspace { 4pt } \noindent
+        \begin{tikzpicture}
+          \draw [ rule , line~width = 0.3pt , step = 5mm ]
+            (0,0) grid ( \dim_eval:n { \linewidth } , \dim_eval:n {#1} ) ;
+        \end{tikzpicture}
+        \par \vspace { 6pt }
+      }
+  }
+\NewDocumentCommand \blank { O{30mm} m }
+  {
+    \__texign_ans_if:nTF { show }
+      { \textcolor{accent} { \underline {#2} } }
+      { \textcolor{rule} { \rule [ -1.5pt ] {#1} { 0.4pt } } }
+  }
+
+% ---- answers ---------------------------------------------------------------------
+\seq_new:N \g__texign_answers_seq
+\cs_new_protected:Npn \__texign_answer_store:n #1
+  {
+    \seq_gput_right:Ne \g__texign_answers_seq
+      { { \theexercise } { \exp_not:n {#1} } }
+  }
+\NewDocumentEnvironment { answer } { +b }
+  {
+    \str_case:Vn \g_texign_answers_tl
+      {
+        { show }
+          {
+            \begin{tcolorbox} [ texign/box = example ]
+            \noindent \__texign_box_label:nnn { example } { answer } { } #1
+            \end{tcolorbox}
+          }
+        { end } { \__texign_answer_store:n {#1} }
+      }
+  }
+  { }
+\tl_new:N \l__texign_ans_prev_tl
+\cs_new_protected:Npn \__texign_answer_print:nn #1#2
+  {
+    \tl_if_eq:NnF \l__texign_ans_prev_tl {#1}
+      {
+        \tl_set:Nn \l__texign_ans_prev_tl {#1}
+        \par \addvspace { 8pt } \noindent
+        { \sffamily \bfseries \color{accent} \texign_string:n { exercise } \nobreakspace #1 }
+        \par \nopagebreak
+      }
+    #2 \par
+  }
+\cs_new_protected:Npn \__texign_answers_page:
+  {
+    \bool_lazy_and:nnT
+      { \str_if_eq_p:Vn \g_texign_answers_tl { end } }
+      { ! \seq_if_empty_p:N \g__texign_answers_seq }
+      {
+        \clearpage
+        \section* { \texign_string:n { answers } }
+        \seq_map_inline:Nn \g__texign_answers_seq { \__texign_answer_print:nn ##1 }
+      }
+  }
+\AtEndDocument { \__texign_answers_page: }

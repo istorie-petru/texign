@@ -33,8 +33,11 @@
   {
     \tl_set:Nn \l__texign_selection_tl { }
     \tl_if_eq:nnT {#1} { all } { \tl_set:Nn \l__texign_selection_tl { selection = all , } }
-    \str_if_eq:VnTF \g_texign_lang_tl { en }
-      { \tl_set:Nn \l_tmpa_tl { sort = en-GB } }
+    \str_case:VnF \g_texign_lang_tl
+      {
+        { en } { \tl_set:Nn \l_tmpa_tl { sort = en-GB } }
+        { fr } { \tl_set:Nn \l_tmpa_tl { sort = fr-FR } }
+      }
       { \tl_set:Ne \l_tmpa_tl { sort = custom , sort-rule = { \exp_not:V \c__texign_sort_ro_tl } } }
     \exp_last_unbraced:Ne \GlsXtrLoadResources
       { [ src = {#2} , type = main , match = { entrytype = entry } , \exp_not:V \l__texign_selection_tl \exp_not:V \l_tmpa_tl ] }

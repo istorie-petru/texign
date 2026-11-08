@@ -113,10 +113,14 @@
 \setkomafont { pageheadfoot } { \sffamily \footnotesize \color{muted} }
 \setkomafont { pagenumber } { \sffamily \footnotesize \color{accent} }
 \clearpairofpagestyles
-\ihead* { \headmark }
+% plain pages (title/first page via \thispagestyle{plain.scrheadings}) drop
+% the running head but keep the page number: \ihead's optional argument is
+% the plain-variant content, empty here; \ohead* uses the same page number
+% on both variants
+\ihead [ ] { \headmark }
 \ohead* { \pagemark }
 \cs_if_exist:NTF \chapter
-  { \automark [ section ] { chapter } \renewcommand* \chapterpagestyle { plain.scrheadings } }
+  { \automark [ section ] { chapter } \renewcommand* \chapterpagestyle { empty } }
   { \automark [ subsection ] { section } }
 \renewcommand* \sectionmarkformat { }
 \cs_if_exist:NT \chapter { \renewcommand* \chaptermarkformat { } }
@@ -184,7 +188,8 @@
     \cs_gset_eq:NN \@subject \c_empty_tl
     \@afterindentfalse \@afterheading
   }
-\RenewDocumentCommand \maketitle { } { \__texign_titleblock: \thispagestyle { plain.scrheadings } }
+% article's first page: no running head, no page number at all
+\RenewDocumentCommand \maketitle { } { \__texign_titleblock: \thispagestyle { empty } }
 \DeclareDocumentEnvironment { abstract } { }
   { \noindent \begin{minipage}{\textwidth} \sffamily \small \color{muted} \ignorespaces }
   { \end{minipage} \par \vspace{16pt} \@afterindentfalse \@afterheading }

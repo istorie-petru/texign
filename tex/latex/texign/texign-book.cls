@@ -45,9 +45,8 @@
 
 % ---- chapters: start lower on the page ---------------------------------------
 \renewcommand* \chapterheadstartvskip { \vspace* { 22mm } }
-% chapter pages: no running head, only the page number
-\ihead [ ] { \headmark }
-\ohead [ \pagemark ] { \pagemark }
+% chapter-opening pages are fully blank (no head, no page number): see
+% \chapterpagestyle in texign-layout.sty
 
 % ---- parts: own page, "PARTEA I" label, large sans title ---------------------
 \renewcommand* \partformat

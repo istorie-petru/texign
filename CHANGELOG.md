@@ -6,6 +6,13 @@ release. The format loosely follows
 
 ## [Unreleased]
 
+- Timeline dots and connecting lines both use the accent colour.
+- Much more space above and below headings.
+- Long words and URLs: looser line breaking, URLs in notes and bibliography
+  break anywhere, table cells can hyphenate their first word.
+- Comparison tables keep their caption on the same page.
+- `texign doctor` reports missing Romanian hyphenation patterns.
+
 ## [0.1.0]
 
 The first release: two document classes with one visual identity.

@@ -199,6 +199,17 @@ and line. Auxiliary files in `.texign/`, PDF next to the source.
 - Index: `\index{...}` + `\printindex`, two columns, letter groups in accent
   sans, Romanian order (upmendex/ICU).
 
+### 2026-11-08 · Accent timelines, heading space, line breaking (István)
+
+- Timeline dots and connecting lines are both accent (#963A45).
+- Headings: 34/12 pt above/below sections, 24/8 pt subsections, 18/6 pt
+  subsubsections.
+- Lines must not overflow: tolerance 2000, 4em emergency stretch, low hyphen
+  penalty, URLs breakable anywhere; `tests/overflow` guards this.
+- Romanian hyphenation needs the patterns from TeX Live's European language
+  collection (Arch: `texlive-langeuropean`); without them babel falls back
+  to `nil` and nothing hyphenates.
+
 ## Known constraints
 
 - 2026-11-05 · The LaTeX kernel `ypos` property records 0 under LuaLaTeX

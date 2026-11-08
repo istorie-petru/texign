@@ -43,4 +43,15 @@ if "$ROOT/tools/texign-build" "$dir/sortare.tex" >"$dir/build.out" 2>&1 \
 else
   echo "FAIL  glossary-order"; sed 's/^/      /' "$dir/diff.out" "$dir/build.out" | tail -12; fail=1
 fi
+# nothing runs past the margins: no line more than 1pt too wide
+# (needs the Romanian hyphenation patterns, which not every TeX Live has)
+dir="$out/overflow"; cp -r "$ROOT/tests/overflow" "$dir"
+if [ -z "$(kpsewhich hyph-ro.tex)" ]; then
+  echo "skip  overflow (no Romanian hyphenation patterns: see texign doctor)"
+elif "$ROOT/tools/texign-build" "$dir/margini.tex" >"$dir/build.out" 2>&1 \
+   && ! grep -E 'Overfull .hbox \(([1-9]|[0-9]{2,})\.' "$dir/.texign/margini.log" >"$dir/over.out"; then
+  echo "ok    overflow"
+else
+  echo "FAIL  overflow"; sed 's/^/      /' "$dir/over.out" "$dir/build.out" | tail -12; fail=1
+fi
 exit $fail

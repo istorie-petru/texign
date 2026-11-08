@@ -66,9 +66,11 @@
 \AddToHook { cmd/section/before } { \__texign_need:n { 9 } }
 \AddToHook { cmd/subsection/before } { \__texign_need:n { 6 } }
 \AddToHook { cmd/subsubsection/before } { \__texign_need:n { 5 } }
-% justified Romanian text has long words: allow a little extra stretch
-% rather than lines running into the margin
-\setlength \emergencystretch { 2.5em }
+% long Romanian words must not run into the margin: accept looser lines
+% and hyphenate readily rather than overflow
+\tolerance = 2000 \scan_stop:
+\hyphenpenalty = 30 \scan_stop:
+\setlength \emergencystretch { 4em }
 \AtBeginDocument { \color{ink} }
 
 % ---- headings (H4): sans semibold, numbers inline before the title ---------
@@ -79,11 +81,11 @@
 \renewcommand* \subsubsectionformat { \textcolor{muted}{\thesubsubsection} \hspace{0.6em} }
 % negative beforeskip: no first-line indent after any heading
 \RedeclareSectionCommand
-  [ beforeskip = -20pt plus -4pt minus -2pt , afterskip = 8pt , font = \large ] { section }
+  [ beforeskip = -34pt plus -6pt minus -4pt , afterskip = 12pt , font = \large ] { section }
 \RedeclareSectionCommand
-  [ beforeskip = -14pt plus -3pt minus -2pt , afterskip = 4pt , font = \normalsize ] { subsection }
+  [ beforeskip = -24pt plus -4pt minus -3pt , afterskip = 8pt , font = \normalsize ] { subsection }
 \RedeclareSectionCommand
-  [ beforeskip = -10pt plus -2pt minus -1pt , afterskip = 2pt , font = \normalsize \mdseries ] { subsubsection }
+  [ beforeskip = -18pt plus -3pt minus -2pt , afterskip = 6pt , font = \normalsize \mdseries ] { subsubsection }
 \cs_if_exist:NT \chapter
   {
     \renewcommand* \chapterformat

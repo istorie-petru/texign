@@ -89,7 +89,7 @@
           }
           {
             \tikz [ remember~picture , overlay ]
-              \draw [ rule , line~width = 0.6pt ] ( \l__texign_tl_prev_tl ) -- ( 0pt , 0.35em ) ;
+              \draw [ accent , line~width = 0.6pt ] ( \l__texign_tl_prev_tl ) -- ( 0pt , 0.35em ) ;
           }
         \kern -2pt
         \tikz [ remember~picture , baseline = -0.35em ]
@@ -119,6 +119,8 @@
 \NewDocumentEnvironment { comparison } { o m m m o }
   {
     \par \addvspace { 8pt }
+    % caption and table stay together on one page
+    \noindent \begin{minipage} { \linewidth }
     \IfValueT {#1} { \captionof { table } {#1} }
     \int_set:Nn \l__texign_cmp_cols_int { \IfValueTF {#5} { 3 } { 2 } }
     % columns fill the line exactly (no stretched gaps, so the row colours
@@ -136,13 +138,13 @@
     \noindent
     \exp_args:Ne \__texign_cmp_begin:n
       {
-        >{ \exp_not:N \leavevmode \exp_not:N \sffamily \exp_not:N \bfseries \exp_not:N \color{muted} \exp_not:N \raggedright \exp_not:N \arraybackslash }
+        >{ \exp_not:N \leavevmode \exp_not:N \hspace{0pt} \exp_not:N \sffamily \exp_not:N \bfseries \exp_not:N \color{muted} \exp_not:N \raggedright \exp_not:N \arraybackslash }
           p { \dim_use:N \l_tmpa_dim }
         \prg_replicate:nn { \l__texign_cmp_cols_int }
-          { >{ \exp_not:N \leavevmode \exp_not:N \raggedright \exp_not:N \arraybackslash } p { \dim_use:N \l_tmpb_dim } }
+          { >{ \exp_not:N \leavevmode \exp_not:N \hspace{0pt} \exp_not:N \raggedright \exp_not:N \arraybackslash } p { \dim_use:N \l_tmpb_dim } }
       }
     \headerrow \head {#2} & \head {#3} & \head {#4} \IfValueT {#5} { & \head {#5} } \\
   }
-  { \end{tabular} \par \addvspace { 8pt } }
+  { \end{tabular} \end{minipage} \par \addvspace { 8pt } }
 \cs_new_protected:Npn \__texign_cmp_begin:n #1
   { \begin{tabular} { #1 } }
